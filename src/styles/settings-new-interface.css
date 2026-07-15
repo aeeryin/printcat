@@ -32,27 +32,7 @@ body, html {
   position: relative;
 }
 
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  opacity: 0.16;
-  background-image: repeating-linear-gradient(
-    90deg,
-    transparent 0,
-    transparent 22px,
-    rgba(255, 255, 255, 0.06) 22px,
-    rgba(255, 255, 255, 0.06) 24px
-  );
-  background-size: 100% 120px;
-  animation: driftLines 9s linear infinite;
-}
 
-@keyframes driftLines {
-  from { background-position: 0 0; }
-  to { background-position: 0 120px; }
-}
 
 /* Titlebar */
 #titlebar {
@@ -76,7 +56,6 @@ body::before {
   border-radius: 0 0 0 0;
   background: conic-gradient(from 0deg, rgba(19, 190, 158, 0.35), rgba(52, 199, 89, 0.35), rgba(19, 190, 158, 0.35));
   opacity: 0.18;
-  animation: spinBorder 5s linear infinite;
   pointer-events: none;
 }
 
@@ -86,11 +65,6 @@ body::before {
   inset: 1px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   pointer-events: none;
-}
-
-@keyframes spinBorder {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
 }
 
 #settings-container {

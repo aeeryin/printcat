@@ -430,7 +430,7 @@ async function captureFullscreenDirectly() {
     if (wasEditorVisible) editorWindow.hide();
     if (wasSettingsVisible) settingsWindow.hide();
 
-    await new Promise(resolve => setTimeout(resolve, 80));
+    await new Promise(resolve => setTimeout(resolve, 50));
 
     const dataUrl = await captureScreen();
 
@@ -458,7 +458,7 @@ async function triggerScreenCapture() {
     if (wasSettingsVisible) settingsWindow.hide();
     
     // Wait a brief moment for the windows to fully hide
-    await new Promise(resolve => setTimeout(resolve, 250));
+    await new Promise(resolve => setTimeout(resolve, 100));
     
     // Close any existing croppers first
     closeAllCroppers();
@@ -640,6 +640,7 @@ function closeAllCroppers() {
 // Editor Window creation
 function openEditorWindow(dataUrl, width, height) {
   if (editorWindow && !editorWindow.isDestroyed()) {
+    if (!editorWindow.isVisible()) editorWindow.show();
     editorWindow.focus();
     editorWindow.webContents.send('open-image', dataUrl, getResolvedLanguage());
     return;
@@ -976,7 +977,10 @@ ipcMain.on('window-control', (event, action) => {
 ipcMain.on('crop-completed', (event, croppedDataUrl, width, height) => {
   closeAllCroppers();
   
-  // Restore settings if it was open before crop
+  // Restore editor and/or settings if they were open before crop
+  if (restoreEditorAfterCrop && editorWindow && !editorWindow.isDestroyed()) {
+    editorWindow.show();
+  }
   if (restoreSettingsAfterCrop && settingsWindow && !settingsWindow.isDestroyed()) {
     settingsWindow.show();
   }

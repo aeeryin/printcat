@@ -1,4 +1,4 @@
-name: Build and Publish Release
+name: Build & Release
 
 on:
   push:
@@ -14,60 +14,246 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  release:
-    name: Build & Publish ${{ matrix.name }}
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - name: Windows
-            os: windows-latest
-            script: publish:win
-          - name: macOS
-            os: macos-latest
-            script: publish:mac
-          - name: Linux
-            os: ubuntu-latest
-            script: publish:linux
-
+  build-windows:
+    name: Windows
+    runs-on: windows-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'npm'
 
-      - name: Install dependencies
-        run: npm ci
+      - run: npm ci
 
-      - name: Install Linux packaging dependencies
-        if: runner.os == 'Linux'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libarchive-tools
-
-      - name: Build & Publish Release
-        run: npm run ${{ matrix.script }}
+      - name: Build Windows
+        run: npm run publish:win
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CSC_IDENTITY_AUTO_DISCOVERY: "false"
 
-      - name: Upload packaged artifacts
-        if: always()
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
-          name: feathershot-${{ matrix.name }}
-          if-no-files-found: ignore
+          name: windows-build
           path: |
             dist/*.exe
+            dist/*.blockmap
+            dist/latest*.yml
+          if-no-files-found: error
+
+  build-macos:
+    name: macOS
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - run: npm ci
+
+      - name: Build macOS
+        run: npm run publish:mac
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CSC_IDENTITY_AUTO_DISCOVERY: "false"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos-build
+          path: |
             dist/*.dmg
             dist/*.zip
+            dist/*.blockmap
+            dist/latest*.yml
+          if-no-files-found: error
+
+  build-linux:
+    name: Linux
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - run: npm ci
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libarchive-tools rpm
+
+      - name: Build Linux
+        run: npm run publish:linux
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CSC_IDENTITY_AUTO_DISCOVERY: "false"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux-build
+          path: |
             dist/*.AppImage
             dist/*.deb
-            dist/latest*.yml
+            dist/*.rpm
+            dist/*.tar.xz
             dist/*.blockmap
+            dist/latest*.yml
+          if-no-files-found: error
+
+  build-pacman:
+    name: Pacman (Arch Linux)
+    runs-on: ubuntu-latest
+    needs: build-linux
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download Linux tar.xz
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-build
+          path: artifacts/
+
+      - name: Setup pacman build environment
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y pacman-package-manager squashfs-tools patchelf tar
+
+      - name: Build Pacman Package
+        run: |
+          # Find the tar.xz file
+          TARBALL=$(find artifacts/ -name "*.tar.xz" | head -1)
+          if [ -z "$TARBALL" ]; then
+            echo "ERROR: tar.xz not found"
+            exit 1
+          fi
+
+          echo "Found tarball: $TARBALL"
+
+          # Create build directory
+          mkdir -p pkgbuild
+          cp PKGBUILD pkgbuild/
+          cp "$TARBALL" pkgbuild/
+
+          # Get version from filename
+          VERSION=$(basename "$TARBALL" | sed 's/Feathershot-\(.*\)-linux\.tar\.xz/\1/')
+          echo "Version: $VERSION"
+
+          # Update PKGBUILD version
+          sed -i "s/pkgver=.*/pkgver=${VERSION}/" pkgbuild/PKGBUILD
+          sed -i "s/pkgver=.*/pkgver=${VERSION}/;s/pkgrel=.*/pkgrel=1/" pkgbuild/PKGBUILD
+
+          # Extract tarball to get file list for sha256sums
+          cd pkgbuild
+          SHA256=$(sha256sum "Feathershot-${VERSION}-linux.tar.xz" | cut -d' ' -f1)
+          sed -i "s/sha256sums=.*/sha256sums=('${SHA256}')/" PKGBUILD
+
+          # Build package using makepkg (simulated - we create the package structure manually)
+          PKGNAME="feathershot-${VERSION}-1-x86_64.pkg.tar.zst"
+          mkdir -p "feathershot-pkg/opt/feathershot"
+          tar xf "Feathershot-${VERSION}-linux.tar.xz" -C "feathershot-pkg/opt/feathershot" --strip-components=0
+
+          # Create symlink directory
+          mkdir -p "feathershot-pkg/usr/bin"
+          ln -s "/opt/feathershot/feathershot" "feathershot-pkg/usr/bin/feathershot"
+
+          # Copy desktop file and icon if they exist
+          mkdir -p "feathershot-pkg/usr/share/applications"
+          mkdir -p "feathershot-pkg/usr/share/pixmaps"
+          if [ -f "feathershot-pkg/opt/feathershot/feathershot.desktop" ]; then
+            cp "feathershot-pkg/opt/feathershot/feathershot.desktop" "feathershot-pkg/usr/share/applications/"
+          fi
+          if [ -f "feathershot-pkg/opt/feathershot/resources/app/src/assets/icons/main.png" ]; then
+            cp "feathershot-pkg/opt/feathershot/resources/app/src/assets/icons/main.png" "feathershot-pkg/usr/share/pixmaps/feathershot.png"
+          fi
+
+          # Create .PKGINFO
+          cat > "feathershot-pkg/.PKGINFO" <<EOF
+          pkgname = feathershot
+          pkgver = ${VERSION}-1
+          pkgdesc = Premium, feature-rich cross-platform screenshot tool inspired by Greenshot
+          url = https://github.com/aeeryin/Feathershot
+          builddate = $(date +%s)
+          packager = Aeeryin <artisticamente.official@gmail.com>
+          size = $(du -sb feathershot-pkg | cut -f1)
+          arch = x86_64
+          license = MIT
+          depends = electron
+          depends = libnotify
+          depends = libxtst
+          depends = nss
+          depends = libxss
+          depends = libappindicator-gtk3
+          depends = libsecret
+          EOF
+
+          # Create the package using tar
+          cd feathershot-pkg
+          tar cf "../${PKGNAME}" .PKGINFO opt usr
+          cd ..
+
+          # Compress with zstd if available, otherwise use xz
+          if command -v zstd &> /dev/null; then
+            zstd -T0 "${PKGNAME}" -o "${PKGNAME}.zst" --rm
+            FINAL_PKG="${PKGNAME}.zst"
+          else
+            xz "${PKGNAME}"
+            FINAL_PKG="${PKGNAME}.xz"
+          fi
+
+          echo "Built package: ${FINAL_PKG}"
+          ls -la "${FINAL_PKG}"
+
+          # Move to dist
+          mkdir -p dist
+          mv "${FINAL_PKG}" dist/
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pacman-build
+          path: dist/*.pkg.tar.*
+          if-no-files-found: error
+
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    needs: [build-windows, build-macos, build-linux, build-pacman]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts/
+          merge-multiple: true
+
+      - name: List all artifacts
+        run: find artifacts/ -type f | sort
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: "Feathershot ${{ github.ref_name }}"
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          files: |
+            artifacts/*.exe
+            artifacts/*.dmg
+            artifacts/*.zip
+            artifacts/*.AppImage
+            artifacts/*.deb
+            artifacts/*.rpm
+            artifacts/*.tar.xz
+            artifacts/*.pkg.tar.*
+            artifacts/*.blockmap
+            artifacts/latest*.yml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -33,11 +33,13 @@
   const statusDims = document.getElementById("status-dims");
   const statusCoords = document.getElementById("status-coords");
   const propLabelSize = document.querySelector(".property-item .prop-label");
+  const emptyState = document.getElementById("empty-state");
   let backgroundImage = new Image();
   let objects = [];
   let historyStack = [];
   let redoStack = [];
   let activeTool = "select";
+  let currentLang = "en";
   let strokeColor = "#ff3b30";
   let strokeWidth = 4;
   let fillShape = false;
@@ -94,7 +96,21 @@
       "lbl-format": "Format",
       "btn-modal-save": "Save",
       "btn-modal-cancel": "Cancel",
-      "btn-modal-browse": "Browse"
+      "btn-modal-browse": "Browse",
+      "notify-copied": "Copied to clipboard",
+      "notify-saved": "Saved successfully!",
+      "notify-no-image": "No image loaded",
+      "notify-ocr-loading": "Extracting text (OCR)...",
+      "notify-loading": "Loading...",
+      "notify-ocr-no-text": "No text found or error: ",
+      "notify-ocr-copied": "Text copied!",
+      "notify-translate-loading": "Extracting & translating...",
+      "notify-translate-processing": "Processing...",
+      "notify-translate-no-text": "No text found in image.",
+      "notify-translate-failed": "Translation failed: ",
+      "notify-translate-copied": "Translation copied!",
+      "notify-pdf-saved": "Saved as PDF!",
+      "notify-pdf-failed": "Failed to save PDF"
     },
     pt: {
       "app-title": "Feathershot",
@@ -130,10 +146,25 @@
       "lbl-format": "Formato",
       "btn-modal-save": "Salvar",
       "btn-modal-cancel": "Cancelar",
-      "btn-modal-browse": "Procurar"
+      "btn-modal-browse": "Procurar",
+      "notify-copied": "Copiado para a \xC1rea de Transfer\xEAncia",
+      "notify-saved": "Salvo com sucesso!",
+      "notify-no-image": "Nenhuma imagem carregada",
+      "notify-ocr-loading": "Extraindo texto (OCR)...",
+      "notify-loading": "Carregando...",
+      "notify-ocr-no-text": "Nenhum texto encontrado ou erro: ",
+      "notify-ocr-copied": "Texto copiado!",
+      "notify-translate-loading": "Extraindo e traduzindo...",
+      "notify-translate-processing": "Processando...",
+      "notify-translate-no-text": "Nenhum texto encontrado na imagem.",
+      "notify-translate-failed": "Falha na tradu\xE7\xE3o: ",
+      "notify-translate-copied": "Tradu\xE7\xE3o copiada!",
+      "notify-pdf-saved": "Salvo como PDF!",
+      "notify-pdf-failed": "Falha ao salvar PDF"
     }
   };
   function applyTranslations(lang) {
+    currentLang = lang;
     const t = editorTranslations[lang] || editorTranslations.en;
     const appTitle = document.querySelector(".title-left .app-title");
     if (appTitle) appTitle.textContent = t["app-title"];
@@ -200,6 +231,7 @@
     applyTranslations(lang || "en");
     backgroundImage.src = dataUrl;
     backgroundImage.onload = () => {
+      if (emptyState) emptyState.style.display = "none";
       objects = [];
       historyStack = [];
       redoStack = [];
@@ -1014,7 +1046,7 @@
     }
   });
   function saveState() {
-    const snap = JSON.stringify(objects);
+    const snap = JSON.stringify({ objects, canvasW: canvas.width, canvasH: canvas.height, bg: backgroundImage.src || '' });
     if (historyStack.length > 0 && historyStack[historyStack.length - 1] === snap) {
       return;
     }
@@ -1025,23 +1057,52 @@
   function undo() {
     if (isEditingText) return;
     if (historyStack.length > 0) {
-      const currentState = JSON.stringify(objects);
-      redoStack.push(currentState);
+      const currentSnap = JSON.stringify({ objects, canvasW: canvas.width, canvasH: canvas.height, bg: backgroundImage.src || '' });
+      redoStack.push(currentSnap);
       const prevState = historyStack.pop();
-      objects = JSON.parse(prevState);
-      selectedObject = null;
-      draw();
+      const state = JSON.parse(prevState);
+      objects = state.objects;
+      if (state.bg && backgroundImage.src !== state.bg) {
+        backgroundImage = new Image();
+        backgroundImage.onload = () => {
+          canvas.width = state.canvasW;
+          canvas.height = state.canvasH;
+          selectedObject = null;
+          draw();
+        };
+        backgroundImage.src = state.bg;
+      } else {
+        canvas.width = state.canvasW;
+        canvas.height = state.canvasH;
+        selectedObject = null;
+        draw();
+      }
       updateUndoRedoButtons();
     }
   }
   function redo() {
     if (isEditingText) return;
     if (redoStack.length > 0) {
+      const currentSnap = JSON.stringify({ objects, canvasW: canvas.width, canvasH: canvas.height, bg: backgroundImage.src || '' });
+      historyStack.push(currentSnap);
       const nextState = redoStack.pop();
-      historyStack.push(JSON.stringify(objects));
-      objects = JSON.parse(nextState);
-      selectedObject = null;
-      draw();
+      const state = JSON.parse(nextState);
+      objects = state.objects;
+      if (state.bg && backgroundImage.src !== state.bg) {
+        backgroundImage = new Image();
+        backgroundImage.onload = () => {
+          canvas.width = state.canvasW;
+          canvas.height = state.canvasH;
+          selectedObject = null;
+          draw();
+        };
+        backgroundImage.src = state.bg;
+      } else {
+        canvas.width = state.canvasW;
+        canvas.height = state.canvasH;
+        selectedObject = null;
+        draw();
+      }
       updateUndoRedoButtons();
     }
   }
@@ -1102,7 +1163,7 @@
     const success = await window.api.copyToClipboard(pngDataUrl, fileData, ext);
     if (success) {
       const label = ext === "jpg" ? "JPG" : ext.toUpperCase();
-      showActionNotification(`Copied to clipboard (.${label.toLowerCase()})`);
+      showActionNotification(`${t("notify-copied")} (.${label.toLowerCase()})`);
     }
   }
   let modalCurrentFolder = "";
@@ -1163,7 +1224,7 @@
     watermarkCanvas = null;
     if (success) {
       closeSaveModal();
-      showActionNotification("Saved successfully!");
+      showActionNotification(t("notify-saved"));
     }
   }
   async function performSave(filePath, ext) {
@@ -1224,6 +1285,10 @@
     }
   }
   initFormatSelect();
+  function t(key) {
+    const dict = editorTranslations[currentLang] || editorTranslations.en;
+    return dict[key] || key;
+  }
   function showActionNotification(msg) {
     const notif = document.createElement("div");
     notif.style.position = "absolute";
@@ -1319,6 +1384,37 @@
     e.preventDefault();
     e.stopPropagation();
   });
+  window.addEventListener("paste", (e) => {
+    const items = e.clipboardData && e.clipboardData.items;
+    if (!items) return;
+    for (const item of items) {
+      if (item.type.startsWith("image/")) {
+        e.preventDefault();
+        const blob = item.getAsFile();
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const dataUrl = event.target.result;
+          backgroundImage = new Image();
+          backgroundImage.src = dataUrl;
+          backgroundImage.onload = () => {
+            if (emptyState) emptyState.style.display = "none";
+            objects = [];
+            historyStack = [];
+            redoStack = [];
+            selectedObject = null;
+            updateUndoRedoButtons();
+            canvas.width = backgroundImage.width;
+            canvas.height = backgroundImage.height;
+            resizeCanvasWrapper();
+            statusDims.textContent = `${canvas.width} \xD7 ${canvas.height} px`;
+            draw();
+          };
+        };
+        reader.readAsDataURL(blob);
+        break;
+      }
+    }
+  });
   workspace.addEventListener("drop", (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -1332,6 +1428,7 @@
           backgroundImage = new Image();
           backgroundImage.src = dataUrl;
           backgroundImage.onload = () => {
+            if (emptyState) emptyState.style.display = "none";
             objects = [];
             historyStack = [];
             redoStack = [];
@@ -1397,22 +1494,22 @@
   const btnOCRClose = document.getElementById("btn-ocr-close");
   const btnCloseOCRModal = document.getElementById("btn-close-ocr-modal");
   btnOCR.addEventListener("click", async () => {
-    if (!backgroundImage.src) return showActionNotification("No image loaded");
-    const dataUrl = canvas.toDataURL("image/png");
-    showActionNotification("Extracting text (OCR)...");
+    if (!backgroundImage.src) return showActionNotification(t("notify-no-image"));
+
+    showActionNotification(t("notify-ocr-loading"));
     ocrModal.style.display = "flex";
-    ocrResultText.value = "Loading...";
+    ocrResultText.value = t("notify-loading");
     const settingsData = await window.api.getSettings();
     const result = await window.api.ocrExtract(dataUrl, settingsData.resolvedLanguage || "en");
     if (result.success) {
       ocrResultText.value = result.text;
     } else {
-      ocrResultText.value = "No text found or error: " + (result.error || "Unknown");
+      ocrResultText.value = t("notify-ocr-no-text") + (result.error || "Unknown");
     }
   });
   btnOCRCopy.addEventListener("click", () => {
     navigator.clipboard.writeText(ocrResultText.value);
-    showActionNotification("Text copied!");
+    showActionNotification(t("notify-ocr-copied"));
   });
   btnOCRClose.addEventListener("click", () => {
     ocrModal.style.display = "none";
@@ -1433,32 +1530,32 @@
   const btnTranslateClose = document.getElementById("btn-translate-close");
   const btnCloseTranslateModal = document.getElementById("btn-close-translate-modal");
   btnTranslate.addEventListener("click", () => {
-    if (!backgroundImage.src) return showActionNotification("No image loaded");
+    if (!backgroundImage.src) return showActionNotification(t("notify-no-image"));
     translateModal.style.display = "flex";
     translateResultText.value = "";
   });
   btnTranslateExtract.addEventListener("click", async () => {
     if (!backgroundImage.src) return;
     const dataUrl = canvas.toDataURL("image/png");
-    showActionNotification("Extracting & translating...");
-    translateResultText.value = "Processing...";
+    showActionNotification(t("notify-translate-loading"));
+    translateResultText.value = t("notify-translate-processing");
     const fromLang = translateFrom.value;
     const toLang = translateTo.value;
     const ocrResult = await window.api.ocrExtract(dataUrl, fromLang);
     if (!ocrResult.success || !ocrResult.text.trim()) {
-      translateResultText.value = "No text found in image.";
+      translateResultText.value = t("notify-translate-no-text");
       return;
     }
     const transResult = await window.api.translateText(ocrResult.text, fromLang, toLang);
     if (transResult.success) {
       translateResultText.value = transResult.text;
     } else {
-      translateResultText.value = "Translation failed: " + (transResult.error || "Unknown");
+      translateResultText.value = t("notify-translate-failed") + (transResult.error || "Unknown");
     }
   });
   btnTranslateCopy.addEventListener("click", () => {
     navigator.clipboard.writeText(translateResultText.value);
-    showActionNotification("Translation copied!");
+    showActionNotification(t("notify-translate-copied"));
   });
   btnTranslateClose.addEventListener("click", () => {
     translateModal.style.display = "none";
@@ -1485,12 +1582,12 @@
       const pdfDataUrl = pdf.output("dataurlstring");
       const success = await window.api.saveFile(filePath, pdfDataUrl);
       if (success) {
-        showActionNotification("Saved as PDF!");
+        showActionNotification(t("notify-pdf-saved"));
         window.api.addToHistory(canvas.toDataURL("image/png"));
       }
     } catch (err) {
       console.error("PDF save error:", err);
-      showActionNotification("Failed to save PDF");
+      showActionNotification(t("notify-pdf-failed"));
     }
   }
   function loadImage(src) {

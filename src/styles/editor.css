@@ -218,13 +218,13 @@ body, html {
 }
 
 .tool-btn.active {
-  background-color: rgba(0, 122, 255, 0.15);
-  border-color: rgba(0, 122, 255, 0.3);
-  color: #64b5f6;
+  background-color: rgba(var(--accent-color-rgb, 19, 190, 158), 0.15);
+  border-color: rgba(var(--accent-color-rgb, 19, 190, 158), 0.3);
+  color: var(--accent-color);
 }
 
 .tool-btn.active svg {
-  color: #64b5f6;
+  color: var(--accent-color);
 }
 
 /* Custom design style for button tool labels */
@@ -407,6 +407,48 @@ input:checked + .toggle-slider:before {
   background-position: 0 0, 10px 10px;
 }
 
+#empty-state {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  color: rgba(255, 255, 255, 0.4);
+  pointer-events: none;
+  user-select: none;
+}
+
+#empty-state-title {
+  font-size: 18px;
+  font-weight: 500;
+  margin: 0;
+}
+
+#empty-state-hint {
+  font-size: 13px;
+  margin: 0;
+  opacity: 0.7;
+}
+
+#empty-state-hint kbd {
+  display: inline-block;
+  padding: 2px 6px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.06);
+  font-family: inherit;
+  font-size: 11px;
+}
+
+[data-theme="light"] #empty-state {
+  color: rgba(0, 0, 0, 0.35);
+}
+
+[data-theme="light"] #empty-state-hint kbd {
+  border-color: rgba(0, 0, 0, 0.15);
+  background: rgba(0, 0, 0, 0.04);
+}
+
 #canvas-wrapper {
   position: relative;
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
@@ -514,11 +556,11 @@ input:checked + .toggle-slider:before {
 [data-theme="light"] .tool-btn.active {
   background-color: rgba(19, 190, 158, 0.15);
   border-color: rgba(19, 190, 158, 0.3);
-  color: #0fa386;
+  color: var(--accent-color);
 }
 
 [data-theme="light"] .tool-btn.active svg {
-  color: #0fa386;
+  color: var(--accent-color);
 }
 
 [data-theme="light"] .win-btn:hover {
@@ -551,11 +593,11 @@ input:checked + .toggle-slider:before {
 [data-theme="linux"] .tool-btn.active {
   background-color: rgba(245, 194, 231, 0.15);
   border-color: rgba(245, 194, 231, 0.3);
-  color: #f5c2e7;
+  color: var(--accent-color);
 }
 
 [data-theme="linux"] .tool-btn.active svg {
-  color: #f5c2e7;
+  color: var(--accent-color);
 }
 
 [data-theme="linux"] .action-btn.primary {
@@ -639,11 +681,11 @@ input:checked + .toggle-slider:before {
 [data-theme="macos"] .tool-btn.active {
   background-color: rgba(0, 122, 255, 0.15);
   border-color: rgba(0, 122, 255, 0.3);
-  color: #007aff;
+  color: var(--accent-color);
 }
 
 [data-theme="macos"] .tool-btn.active svg {
-  color: #007aff;
+  color: var(--accent-color);
 }
 
 [data-theme="macos"] .action-btn.primary {
@@ -689,11 +731,11 @@ input:checked + .toggle-slider:before {
   [data-theme="system"] .tool-btn.active {
     background-color: rgba(19, 190, 158, 0.15);
     border-color: rgba(19, 190, 158, 0.3);
-    color: #0fa386;
+    color: var(--accent-color);
   }
   
   [data-theme="system"] .tool-btn.active svg {
-    color: #0fa386;
+    color: var(--accent-color);
   }
   
   [data-theme="system"] .win-btn:hover {
@@ -950,6 +992,11 @@ input:checked + .toggle-slider:before {
 [data-theme="custom"] .tool-btn.active {
   background-color: rgba(255, 255, 255, 0.08);
   border-color: var(--accent-color);
+  color: var(--accent-color);
+}
+
+[data-theme="custom"] .tool-btn.active svg {
+  color: var(--accent-color);
 }
 
 [data-theme="custom"] .action-btn.primary {
