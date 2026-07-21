@@ -28,6 +28,7 @@ const DEFAULT_SETTINGS = {
   fileNamePattern: 'Screenshot_{yyyy}-{mm}-{dd}_{hh}-{mm}-{ss}',
   alwaysMaximized: false,
   startAtLogin: false,
+  showRuler: true,
   language: 'auto', // 'auto' | 'en' | 'pt' | 'es' | 'ja' | 'ko' | 'de' | 'zh' | 'fr'
   theme: 'dark', // 'dark' | 'light' | 'linux' | 'macos'
   watermarkEnabled: false,
@@ -220,6 +221,10 @@ function registerShortcuts() {
   try {
     const registered = globalShortcut.register(shortcutString, () => {
       triggerScreenCapture();
+    });
+    const colorPickerKey = settings.colorPickerShortcut || 'Alt+C';
+    globalShortcut.register(colorPickerKey, () => {
+      triggerColorPicker();
     });
     if (!registered) {
       console.warn(`Failed to register global shortcut: ${shortcutString}`);
@@ -578,6 +583,7 @@ function createCropperWindows(validScreenshots) {
       backgroundColor: '#000000',
       alwaysOnTop: true,
       fullscreen: false,
+      type: IS_WINDOWS ? 'toolbar' : undefined,
       resizable: false,
       show: true, // Show immediately to avoid Chromium paint throttling on hidden windows
       focusable: true,
@@ -592,6 +598,7 @@ function createCropperWindows(validScreenshots) {
     
     win.setAlwaysOnTop(true, 'screen-saver', 1);
     win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+    win.setBounds(display.bounds);
     win.loadFile(path.join('src', 'pages', 'cropper.html'));
     
     // This window's offset within the virtual desktop
@@ -608,10 +615,13 @@ function createCropperWindows(validScreenshots) {
           displaySize: { width: display.bounds.width, height: display.bounds.height },
           totalSize: { width: totalWidth, height: totalHeight },
           theme: settings.theme,
-          defaultAction: settings.defaultAction
+          defaultAction: settings.defaultAction,
+          showRuler: settings.showRuler !== false
         }, getResolvedLanguage());
         
-        // Explicitly focus and show to ensure foreground focus
+        // Explicitly focus, set bounds and show to ensure taskbar is covered
+        win.setBounds(display.bounds);
+        win.setAlwaysOnTop(true, 'screen-saver', 1);
         win.show();
         win.focus();
       }
@@ -1036,66 +1046,34 @@ ipcMain.on('close-editor', () => {
   }
 });
 
-// Places a real file on the Windows clipboard (CF_HDROP) plus a bitmap image, so
-// pasting yields an actual file with the chosen extension (e.g. .gif) while apps
-// that only accept images still get the picture. Uses PowerShell + WinForms.
-function copyFileToClipboardWindows(dropPath, imgPath) {
-  return new Promise((resolve) => {
-    const esc = (p) => p.replace(/'/g, "''");
-    const script = `Add-Type -AssemblyName System.Windows.Forms,System.Drawing; ` +
-      `$files=New-Object System.Collections.Specialized.StringCollection; ` +
-      `$files.Add('${esc(dropPath)}') | Out-Null; ` +
-      `$do=New-Object System.Windows.Forms.DataObject; ` +
-      `$do.SetFileDropList($files); ` +
-      `$img=$null; try { $img=[System.Drawing.Image]::FromFile('${esc(imgPath)}'); $do.SetImage($img); } catch {}; ` +
-      `[System.Windows.Forms.Clipboard]::SetDataObject($do, $true); ` +
-      `if ($img) { $img.Dispose(); }`;
-
-    execFile('powershell', ['-STA', '-NoProfile', '-NonInteractive', '-Command', script], { timeout: 15000 }, (error, stdout, stderr) => {
-      if (error) {
-        console.error('[Feathershot] Clipboard PowerShell error:', error.message, stderr);
-        return resolve(false);
-      }
-      resolve(true);
-    });
-  });
-}
-
 ipcMain.handle('copy-to-clipboard', async (event, pngDataUrl, fileData, format) => {
   try {
-    const fmt = (format || 'png').toLowerCase();
-    const ext = fmt === 'jpeg' ? 'jpg' : fmt;
-
-    const pngBuffer = (typeof pngDataUrl === 'string' && pngDataUrl.startsWith('data:'))
-      ? Buffer.from(pngDataUrl.split(',')[1], 'base64')
-      : null;
-
-    let fileBuffer;
+    let imageBuffer = null;
     if (typeof fileData === 'string' && fileData.startsWith('data:')) {
-      fileBuffer = Buffer.from(fileData.split(',')[1], 'base64');
-    } else if (fileData) {
-      fileBuffer = Buffer.from(fileData); // gif bytes (Uint8Array)
-    } else {
-      fileBuffer = pngBuffer;
+      imageBuffer = Buffer.from(fileData.split(',')[1], 'base64');
+    } else if (fileData && (Buffer.isBuffer(fileData) || fileData instanceof Uint8Array)) {
+      imageBuffer = Buffer.from(fileData);
+    } else if (typeof pngDataUrl === 'string' && pngDataUrl.startsWith('data:')) {
+      imageBuffer = Buffer.from(pngDataUrl.split(',')[1], 'base64');
     }
 
-    // On Windows, drop the file (in the chosen format) on the clipboard so pasting
-    // into Explorer / chat apps produces a real file with the right extension.
-    if (IS_WINDOWS && fileBuffer && pngBuffer) {
-      const dropPath = path.join(os.tmpdir(), `feathershot_clip.${ext}`);
-      const imgPath = path.join(os.tmpdir(), 'feathershot_clip_img.png');
-      fs.writeFileSync(dropPath, fileBuffer);
-      fs.writeFileSync(imgPath, pngBuffer);
-      const ok = await copyFileToClipboardWindows(dropPath, imgPath);
-      if (ok) return true;
-      // fall through to the image-only fallback if PowerShell failed
+    if (imageBuffer) {
+      const img = nativeImage.createFromBuffer(imageBuffer);
+      if (!img.isEmpty()) {
+        clipboard.writeImage(img);
+        return true;
+      }
     }
 
-    // Fallback (non-Windows, or PowerShell failure): put the bitmap on the clipboard.
-    if (pngBuffer) {
-      clipboard.writeImage(nativeImage.createFromBuffer(pngBuffer));
-      return true;
+    if (typeof pngDataUrl === 'string' && pngDataUrl.startsWith('data:')) {
+      const pngBuffer = Buffer.from(pngDataUrl.split(',')[1], 'base64');
+      const img = nativeImage.createFromBuffer(pngBuffer);
+      if (!img.isEmpty()) {
+        clipboard.writeImage(img);
+        return true;
+      }
     }
+
     return false;
   } catch (err) {
     console.error('Failed to copy to clipboard:', err);
@@ -1297,11 +1275,15 @@ ipcMain.handle('save-to-desktop', async (event, dataUrl) => {
   try {
     const buffer = Buffer.from(dataUrl.split(',')[1], 'base64');
     const fileName = generateFileName();
-    const savePath = path.join(app.getPath('desktop'), fileName);
+    const feathershotFolder = path.join(app.getPath('desktop'), 'Feathershot');
+    if (!fs.existsSync(feathershotFolder)) {
+      fs.mkdirSync(feathershotFolder, { recursive: true });
+    }
+    const savePath = path.join(feathershotFolder, fileName);
     fs.writeFileSync(savePath, buffer);
     return true;
   } catch (err) {
-    console.error('Failed to save to desktop:', err);
+    console.error('Failed to save to Feathershot folder:', err);
     return false;
   }
 });
@@ -1426,3 +1408,52 @@ ipcMain.handle('get-watermark-logo', () => {
     return null;
   }
 });
+
+// ========== Fast Color Picker Global ==========
+async function triggerColorPicker() {
+  try {
+    const cursorPoint = screen.getCursorScreenPoint();
+    const activeDisplay = screen.getDisplayNearestPoint(cursorPoint);
+    const screenshotDataUrl = await captureScreenViaPowerShell(activeDisplay).catch(() => captureScreenViaDesktopCapturer(activeDisplay));
+    
+    if (!screenshotDataUrl) return;
+
+    const base64Data = screenshotDataUrl.replace(/^data:image\/\w+;base64,/, '');
+    const pngBuffer = Buffer.from(base64Data, 'base64');
+    const img = nativeImage.createFromBuffer(pngBuffer);
+    const size = img.getSize();
+    const bitmap = img.toBitmap();
+
+    const localX = Math.max(0, Math.min(size.width - 1, Math.floor((cursorPoint.x - activeDisplay.bounds.x) * (size.width / activeDisplay.bounds.width))));
+    const localY = Math.max(0, Math.min(size.height - 1, Math.floor((cursorPoint.y - activeDisplay.bounds.y) * (size.height / activeDisplay.bounds.height))));
+
+    const offset = (localY * size.width + localX) * 4;
+    let r, g, b;
+    if (IS_WINDOWS) {
+      b = bitmap[offset];
+      g = bitmap[offset + 1];
+      r = bitmap[offset + 2];
+    } else {
+      r = bitmap[offset];
+      g = bitmap[offset + 1];
+      b = bitmap[offset + 2];
+    }
+
+    const hex = '#' + [r, g, b].map(x => (x || 0).toString(16).padStart(2, '0')).join('').toUpperCase();
+    const rgbStr = `RGB(${r}, ${g}, ${b})`;
+
+    clipboard.writeText(hex);
+
+    if (Notification.isSupported()) {
+      new Notification({
+        title: 'Feathershot Color Picker',
+        body: getResolvedLanguage() === 'pt'
+          ? `Cor ${hex} (${rgbStr}) copiada!`
+          : `Color ${hex} (${rgbStr}) copied!`,
+        icon: APP_ICON_PATH
+      }).show();
+    }
+  } catch (err) {
+    console.error('Color picker error:', err);
+  }
+}

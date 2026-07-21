@@ -227,26 +227,6 @@
           <div id="hotkey-warning" class="hotkey-warning" style="display:none;"></div>
         </div>
 
-        <!-- Option Card: Windows Print Screen -->
-        <div class="setting-card">
-          <div class="card-title" id="card-printscreen-title">Windows Print Screen</div>
-          <div class="card-desc" id="card-printscreen-desc">Enable or disable Windows built-in Print Screen snipping.
-          </div>
-          <div class="toggle-row">
-            <label class="toggle-label" for="toggle-printscreen">
-              <div class="toggle-text">
-                <strong id="toggle-printscreen-title">Enable Windows Print Screen snip</strong>
-                <span id="toggle-printscreen-desc">Turn this off to let Feathershot handle Print Screen directly.</span>
-              </div>
-              <div class="toggle-switch">
-                <input type="checkbox" id="toggle-printscreen">
-                <span class="toggle-slider"></span>
-              </div>
-            </label>
-          </div>
-          <span class="input-hint" id="toggle-printscreen-unsupported-desc"></span>
-        </div>
-
         <!-- Option Card: Language -->
         <div class="setting-card">
           <div class="card-title" id="card-language-title">Language</div>
@@ -319,9 +299,8 @@
 
         <!-- Option Card 3: Editor Behavior -->
         <div class="setting-card">
-          <div class="card-title" id="card-editor-behavior-title">Editor Behavior</div>
-          <div class="card-desc" id="card-editor-behavior-desc">Configure how the image editor opens after capture.
-          </div>
+          <div class="card-title" id="card-editor-behavior-title">Others</div>
+          <div class="card-desc" id="card-editor-behavior-desc">Configure some other options.</div>
           <div class="toggle-row">
             <label class="toggle-label" for="toggle-maximized">
               <div class="toggle-text">
@@ -335,14 +314,27 @@
               </div>
             </label>
           </div>
+          <div class="toggle-row" style="margin-top: 12px;">
+            <label class="toggle-label" for="toggle-ruler">
+              <div class="toggle-text">
+                <strong id="toggle-ruler-title">Show Pixel Ruler on Crop</strong>
+                <span id="toggle-ruler-desc">Display pixel measurement ticks and coordinates on the selection box during
+                  cropping.</span>
+              </div>
+              <div class="toggle-switch">
+                <input type="checkbox" id="toggle-ruler" checked>
+                <span class="toggle-slider"></span>
+              </div>
+            </label>
+          </div>
+
+          <!-- Footer Actions inside Others card -->
+          <div id="footer-actions" style="margin-top: 20px; padding-top: 12px; border-top: 1px solid var(--border-color);">
+            <button id="btn-save-settings" class="primary-btn">Save Configurations</button>
+            <button id="btn-cancel-settings" class="secondary-btn">Cancel</button>
+          </div>
         </div>
       </div>
-    </div>
-
-    <!-- Footer Actions -->
-    <div id="footer-actions">
-      <button id="btn-save-settings" class="primary-btn">Save Configurations</button>
-      <button id="btn-cancel-settings" class="secondary-btn">Cancel</button>
     </div>
   </div>
 

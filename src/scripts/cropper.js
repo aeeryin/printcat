@@ -64,6 +64,7 @@
     if (hintOverlay) hintOverlay.textContent = t["hint-overlay"];
   }
   let defaultAction = "editor";
+  let showRuler = true;
   window.api.onCaptureImage((data, lang) => {
     applyTranslations(lang || "en");
     if (data.theme) {
@@ -71,6 +72,9 @@
     }
     if (data.defaultAction) {
       defaultAction = data.defaultAction;
+    }
+    if (data.showRuler !== undefined) {
+      showRuler = data.showRuler !== false;
     }
     displayOffset = data.displayOffset;
     displayWidth = data.displaySize.width;
@@ -302,16 +306,17 @@
     );
     return cropCanvas.toDataURL("image/png");
   }
+  const btnUpload = document.getElementById("menu-upload");
   btnEditor.addEventListener("click", () => {
     const dataUrl = getCroppedDataUrl();
     if (dataUrl) {
       window.api.cropCompleted(dataUrl, croppedRect.w, croppedRect.h);
     }
   });
-  btnClipboard.addEventListener("click", async () => {
+  btnClipboard.addEventListener("click", () => {
     const dataUrl = getCroppedDataUrl();
     if (dataUrl) {
-      await window.api.copyToClipboard(dataUrl);
+      window.api.copyToClipboard(dataUrl);
       window.api.cancelCrop();
     }
   });
@@ -412,6 +417,41 @@
         ctx.strokeStyle = "#00e5ff";
         ctx.lineWidth = 1.5;
         ctx.strokeRect(localX, localY, globalRect.w, globalRect.h);
+
+        // Pixel Ruler Graduation Ticks along top and left edges
+        if (showRuler) {
+          ctx.save();
+          ctx.strokeStyle = "rgba(0, 229, 255, 0.7)";
+          ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+          ctx.font = "9px sans-serif";
+          ctx.lineWidth = 1;
+          const rw = globalRect.w;
+          const rh = globalRect.h;
+          for (let step = 0; step <= rw; step += 10) {
+            const tx = localX + step;
+            const th = step % 50 === 0 ? 6 : 3;
+            ctx.beginPath();
+            ctx.moveTo(tx, localY);
+            ctx.lineTo(tx, localY + th);
+            ctx.stroke();
+            if (step % 50 === 0 && step > 0 && step < rw - 15) {
+              ctx.fillText(`${step}`, tx - 6, localY + 14);
+            }
+          }
+          for (let step = 0; step <= rh; step += 10) {
+            const ty = localY + step;
+            const tw = step % 50 === 0 ? 6 : 3;
+            ctx.beginPath();
+            ctx.moveTo(localX, ty);
+            ctx.lineTo(localX + tw, ty);
+            ctx.stroke();
+            if (step % 50 === 0 && step > 0 && step < rh - 15) {
+              ctx.fillText(`${step}`, localX + 8, ty + 3);
+            }
+          }
+          ctx.restore();
+        }
+
         const guideSize = 8;
         ctx.fillStyle = "#00e5ff";
         ctx.fillRect(localX - 1, localY - 1, guideSize, 2);
@@ -488,11 +528,20 @@
     let magY = mouseY + 15;
     if (magX + MAG_SIZE > window.innerWidth) magX = mouseX - MAG_SIZE - 15;
     if (magY + MAG_SIZE > window.innerHeight) magY = mouseY - MAG_SIZE - 15;
+    
+    let colorText = "";
+    try {
+      const compCtx = compositeCanvas.getContext("2d");
+      const pxData = compCtx.getImageData(Math.floor(gx), Math.floor(gy), 1, 1).data;
+      const hex = "#" + [pxData[0], pxData[1], pxData[2]].map(v => v.toString(16).padStart(2, "0")).join("").toUpperCase();
+      colorText = ` | ${hex}`;
+    } catch (_) {}
+
     if (mouseOnScreen) {
       magnifier.style.left = `${magX}px`;
       magnifier.style.top = `${magY}px`;
       magnifier.style.display = "block";
-      magText.textContent = `X: ${Math.round(mouseX)} | Y: ${Math.round(mouseY)}`;
+      magText.textContent = `X: ${Math.round(mouseX)} | Y: ${Math.round(mouseY)}${colorText}`;
     } else {
       magnifier.style.display = "none";
     }

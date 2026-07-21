@@ -4,6 +4,7 @@
   const recordBtn = document.getElementById("btn-record-hotkey");
   const printScreenBtn = document.getElementById("btn-set-printscreen");
   const toggleMaximized = document.getElementById("toggle-maximized");
+  const toggleRuler = document.getElementById("toggle-ruler");
   const toggleStartup = document.getElementById("toggle-startup");
   const togglePrintscreen = document.getElementById("toggle-printscreen");
   const folderInput = document.getElementById("folder-input");
@@ -74,9 +75,11 @@
       "toggle-printscreen-desc": "Turn this off to let Feathershot handle Print Screen directly.",
       "toggle-printscreen-unsupported-desc": "This feature is only available on Windows.",
       "card-editor-behavior-title": "Editor Behavior",
-      "card-editor-behavior-desc": "Configure how the image editor opens after capture.",
+      "card-editor-behavior-desc": "Configure some other options.",
       "toggle-maximized-title": "Always open editor maximized",
       "toggle-maximized-desc": "The editor window will always open in fullscreen mode, regardless of the image size.",
+      "toggle-ruler-title": "Show Pixel Ruler on Crop",
+      "toggle-ruler-desc": "Display pixel measurement ticks and coordinates on the selection box during cropping.",
       "card-startup-title": "Startup",
       "card-startup-desc": "Control whether the application launches automatically when you sign in.",
       "toggle-startup-title": "Start with system",
@@ -135,10 +138,12 @@
       "toggle-printscreen-title": "Ativar captura do Print Screen do Windows",
       "toggle-printscreen-desc": "Desative isso para deixar o Feathershot controlar o Print Screen diretamente.",
       "toggle-printscreen-unsupported-desc": "Este recurso est\xE1 dispon\xEDvel apenas no Windows.",
-      "card-editor-behavior-title": "Comportamento do Editor",
-      "card-editor-behavior-desc": "Configure como o editor de imagem abre ap\xF3s a captura.",
+      "card-editor-behavior-title": "Outros",
+      "card-editor-behavior-desc": "Configure algumas outras op\xE7\xF5es.",
       "toggle-maximized-title": "Sempre abrir o editor maximizado",
       "toggle-maximized-desc": "A janela do editor sempre abrir\xE1 maximizada, independentemente do tamanho da imagem.",
+      "toggle-ruler-title": "Exibir R\xE9gua de Pixels no Corte",
+      "toggle-ruler-desc": "Exibir marca\xE7\xF5es num\xE9ricas de r\xE9gua e coordenadas na caixa de sele\xE7\xE3o durante o recorte.",
       "card-startup-title": "Inicializa\xE7\xE3o",
       "card-startup-desc": "Controle se o aplicativo inicia automaticamente ao fazer login.",
       "toggle-startup-title": "Iniciar com o sistema",
@@ -421,6 +426,7 @@
     formatSelect.value = currentSettings.imageFormat;
     languageSelect.value = currentSettings.language || "auto";
     toggleMaximized.checked = currentSettings.alwaysMaximized || false;
+    if (toggleRuler) toggleRuler.checked = currentSettings.showRuler !== false;
     toggleStartup.checked = currentSettings.startAtLogin || currentSettings.startWithWindows || false;
     if (currentSettings.supportsAutoLaunch === false) {
       toggleStartup.checked = false;
@@ -558,6 +564,7 @@
       fileNamePattern: filenamePatternInput.value,
       imageFormat: formatSelect.value,
       alwaysMaximized: toggleMaximized.checked,
+      showRuler: toggleRuler ? toggleRuler.checked : true,
       startAtLogin: toggleStartup.checked,
       windowsPrintScreenSnip: shortcutValue === "PrintScreen" ? false : togglePrintscreen ? togglePrintscreen.checked : true,
       language: languageSelect.value,

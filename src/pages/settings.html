@@ -71,7 +71,8 @@
         <!-- Option Card 1: Capture Action -->
         <div class="setting-card">
           <div class="card-title" id="card-default-action-title">Default Action</div>
-          <div class="card-desc" id="card-default-action-desc">Choose what happens right after you select and crop a screen area.</div>
+          <div class="card-desc" id="card-default-action-desc">Choose what happens right after you select and crop a
+            screen area.</div>
           <div class="radio-group">
             <label class="radio-label">
               <input type="radio" name="default-action" value="editor" checked>
@@ -117,7 +118,8 @@
             <div class="setting-field" style="flex: 2;">
               <label class="field-label" id="label-naming-template">File Naming Template</label>
               <input type="text" id="filename-pattern" placeholder="Screenshot_{yyyy}-{month}-{day}">
-              <span class="input-hint" id="naming-hint">Supported tokens: {yyyy}, {month}, {day}, {hour}, {min}, {sec}</span>
+              <span class="input-hint" id="naming-hint">Supported tokens: {yyyy}, {month}, {day}, {hour}, {min},
+                {sec}</span>
             </div>
             <div class="setting-field" style="flex: 1;">
               <label class="field-label" id="label-format">Format</label>
@@ -134,12 +136,14 @@
         <!-- Option Card: Startup -->
         <div class="setting-card">
           <div class="card-title" id="card-startup-title">Startup</div>
-          <div class="card-desc" id="card-startup-desc">Control whether the application launches automatically when you sign in.</div>
+          <div class="card-desc" id="card-startup-desc">Control whether the application launches automatically when you
+            sign in.</div>
           <div class="toggle-row">
             <label class="toggle-label" for="toggle-startup">
               <div class="toggle-text">
                 <strong id="toggle-startup-title">Start with system</strong>
-                <span id="toggle-startup-desc">Feathershot will run in the system tray automatically when you sign in.</span>
+                <span id="toggle-startup-desc">Feathershot will run in the system tray automatically when you sign
+                  in.</span>
               </div>
               <div class="toggle-switch">
                 <input type="checkbox" id="toggle-startup">
@@ -159,7 +163,8 @@
             <input type="text" id="hotkey-input" placeholder="Press a hotkey..." readonly>
             <button id="btn-record-hotkey" class="secondary-btn">Change Hotkey</button>
             <button id="btn-set-printscreen" class="secondary-btn printscreen-btn" title="Use Print Screen key">
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
                 <rect x="2" y="3" width="20" height="14" rx="2" />
                 <line x1="8" y1="21" x2="16" y2="21" />
                 <line x1="12" y1="17" x2="12" y2="21" />
@@ -167,27 +172,9 @@
               PrtSc
             </button>
           </div>
-          <span class="input-hint" id="hotkey-hint">Click "Change Hotkey" to record a combo, or use the PrtSc button to set Print Screen directly.</span>
+          <span class="input-hint" id="hotkey-hint">Click "Change Hotkey" to record a combo, or use the PrtSc button to
+            set Print Screen directly.</span>
           <div id="hotkey-warning" class="hotkey-warning" style="display:none;"></div>
-        </div>
-
-        <!-- Option Card: Windows Print Screen -->
-        <div class="setting-card">
-          <div class="card-title" id="card-printscreen-title">Windows Print Screen</div>
-          <div class="card-desc" id="card-printscreen-desc">Enable or disable Windows built-in Print Screen snipping.</div>
-          <div class="toggle-row">
-            <label class="toggle-label" for="toggle-printscreen">
-              <div class="toggle-text">
-                <strong id="toggle-printscreen-title">Enable Windows Print Screen snip</strong>
-                <span id="toggle-printscreen-desc">Turn this off to let Feathershot handle Print Screen directly.</span>
-              </div>
-              <div class="toggle-switch">
-                <input type="checkbox" id="toggle-printscreen">
-                <span class="toggle-slider"></span>
-              </div>
-            </label>
-          </div>
-          <span class="input-hint" id="toggle-printscreen-unsupported-desc"></span>
         </div>
 
         <!-- Option Card: Language -->
@@ -220,13 +207,14 @@
 
         <!-- Option Card 3: Editor Behavior -->
         <div class="setting-card">
-          <div class="card-title" id="card-editor-behavior-title">Editor Behavior</div>
-          <div class="card-desc" id="card-editor-behavior-desc">Configure how the image editor opens after capture.</div>
+          <div class="card-title" id="card-editor-behavior-title">Others</div>
+          <div class="card-desc" id="card-editor-behavior-desc">Configure some other options.</div>
           <div class="toggle-row">
             <label class="toggle-label" for="toggle-maximized">
               <div class="toggle-text">
                 <strong id="toggle-maximized-title">Always open editor maximized</strong>
-                <span id="toggle-maximized-desc">The editor window will always open in fullscreen mode, regardless of the image size.</span>
+                <span id="toggle-maximized-desc">The editor window will always open in fullscreen mode, regardless of
+                  the image size.</span>
               </div>
               <div class="toggle-switch">
                 <input type="checkbox" id="toggle-maximized">
@@ -234,14 +222,14 @@
               </div>
             </label>
           </div>
+
+          <!-- Footer Actions inside Others card -->
+          <div id="footer-actions" style="margin-top: 20px; padding-top: 12px; border-top: 1px solid var(--border-color);">
+            <button id="btn-save-settings" class="primary-btn">Save Configurations</button>
+            <button id="btn-cancel-settings" class="secondary-btn">Cancel</button>
+          </div>
         </div>
       </div>
-    </div>
-
-    <!-- Footer Actions -->
-    <div id="footer-actions">
-      <button id="btn-save-settings" class="primary-btn">Save Configurations</button>
-      <button id="btn-cancel-settings" class="secondary-btn">Cancel</button>
     </div>
     <div class="settings-fade"></div>
   </div>

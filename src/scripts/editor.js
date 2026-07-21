@@ -242,6 +242,7 @@
       resizeCanvasWrapper();
       statusDims.textContent = `${canvas.width} \xD7 ${canvas.height} px`;
       draw();
+      detectBarcodesAndQRCodes();
     };
   });
   function resizeCanvasWrapper() {
@@ -357,7 +358,7 @@
         isDraggingObject = true;
         dragStartX = mouseX;
         dragStartY = mouseY;
-        if (hit.type === "line" || hit.type === "arrow") {
+        if (hit.type === "line" || hit.type === "arrow" || hit.type === "ruler") {
           dragStartObjProps = { x1: hit.x1, y1: hit.y1, x2: hit.x2, y2: hit.y2 };
         } else if (hit.type === "freehand") {
           dragStartObjProps = { points: hit.points.map((p) => ({ ...p })) };
@@ -436,7 +437,7 @@
     if (isDraggingObject && selectedObject) {
       const dx = mouseX - dragStartX;
       const dy = mouseY - dragStartY;
-      if (selectedObject.type === "line" || selectedObject.type === "arrow") {
+      if (selectedObject.type === "line" || selectedObject.type === "arrow" || selectedObject.type === "ruler") {
         selectedObject.x1 = dragStartObjProps.x1 + dx;
         selectedObject.y1 = dragStartObjProps.y1 + dy;
         selectedObject.x2 = dragStartObjProps.x2 + dx;
@@ -489,7 +490,7 @@
         draw();
         return;
       }
-      if (activeDrawingObject.type === "line" || activeDrawingObject.type === "arrow") {
+      if (activeDrawingObject.type === "line" || activeDrawingObject.type === "arrow" || activeDrawingObject.type === "ruler") {
         const len = Math.hypot(activeDrawingObject.x2 - activeDrawingObject.x1, activeDrawingObject.y2 - activeDrawingObject.y1);
         if (len < 5) isValid = false;
       } else if (activeDrawingObject.type === "freehand") {
@@ -602,9 +603,9 @@
             return obj;
           }
         }
-      } else if (obj.type === "line" || obj.type === "arrow") {
+      } else if (obj.type === "line" || obj.type === "arrow" || obj.type === "ruler") {
         const dist = distToSegment({ x, y }, { x: obj.x1, y: obj.y1 }, { x: obj.x2, y: obj.y2 });
-        if (dist <= obj.strokeWidth + 6) {
+        if (dist <= (obj.strokeWidth || 4) + 6) {
           return obj;
         }
       }
@@ -637,7 +638,7 @@
       activeDrawingObject.y = drawStartY;
       activeDrawingObject.w = w;
       activeDrawingObject.h = h;
-    } else if (activeDrawingObject.type === "line" || activeDrawingObject.type === "arrow") {
+    } else if (activeDrawingObject.type === "line" || activeDrawingObject.type === "arrow" || activeDrawingObject.type === "ruler") {
       activeDrawingObject.x1 = drawStartX;
       activeDrawingObject.y1 = drawStartY;
       activeDrawingObject.x2 = x;
@@ -866,6 +867,48 @@
       c.lineWidth = 1.5;
       c.setLineDash([4, 4]);
       c.strokeRect(obj.x, obj.y, obj.w, obj.h);
+    } else if (obj.type === "ruler") {
+      const dist = Math.round(Math.hypot(obj.x2 - obj.x1, obj.y2 - obj.y1));
+      const dx = obj.x2 - obj.x1;
+      const dy = obj.y2 - obj.y1;
+      const angle = Math.atan2(dy, dx);
+      
+      c.beginPath();
+      c.moveTo(obj.x1, obj.y1);
+      c.lineTo(obj.x2, obj.y2);
+      c.strokeStyle = obj.color;
+      c.lineWidth = obj.strokeWidth;
+      c.setLineDash([4, 4]);
+      c.stroke();
+      c.setLineDash([]);
+      
+      const perpAngle = angle + Math.PI / 2;
+      const capLen = Math.max(10, obj.strokeWidth * 2.5);
+      
+      c.beginPath();
+      c.moveTo(obj.x1 - Math.cos(perpAngle) * capLen, obj.y1 - Math.sin(perpAngle) * capLen);
+      c.lineTo(obj.x1 + Math.cos(perpAngle) * capLen, obj.y1 + Math.sin(perpAngle) * capLen);
+      c.moveTo(obj.x2 - Math.cos(perpAngle) * capLen, obj.y2 - Math.sin(perpAngle) * capLen);
+      c.lineTo(obj.x2 + Math.cos(perpAngle) * capLen, obj.y2 + Math.sin(perpAngle) * capLen);
+      c.strokeStyle = obj.color;
+      c.lineWidth = Math.max(2, obj.strokeWidth);
+      c.stroke();
+      
+      const midX = (obj.x1 + obj.x2) / 2;
+      const midY = (obj.y1 + obj.y2) / 2;
+      const label = `${dist} px`;
+      c.font = "bold 13px " + fontName;
+      const textW = c.measureText(label).width;
+      
+      c.fillStyle = obj.color;
+      c.beginPath();
+      c.roundRect(midX - textW / 2 - 8, midY - 12, textW + 16, 22, 6);
+      c.fill();
+      
+      c.fillStyle = "#ffffff";
+      c.textAlign = "center";
+      c.textBaseline = "middle";
+      c.fillText(label, midX, midY);
     }
     c.restore();
   }
@@ -892,7 +935,7 @@
     c.strokeStyle = "#007aff";
     c.lineWidth = 1.5;
     c.setLineDash([4, 4]);
-    if (obj.type === "line" || obj.type === "arrow") {
+    if (obj.type === "line" || obj.type === "arrow" || obj.type === "ruler") {
       const minX = Math.min(obj.x1, obj.x2) - 6;
       const maxX = Math.max(obj.x1, obj.x2) + 6;
       const minY = Math.min(obj.y1, obj.y2) - 6;
@@ -1321,6 +1364,39 @@
     }, 2200);
   }
   btnCopy.addEventListener("click", copyToClipboard);
+  const barcodeBanner = document.getElementById("barcode-banner");
+  const barcodeText = document.getElementById("barcode-text");
+  const btnBarcodeCopy = document.getElementById("btn-barcode-copy");
+  let detectedBarcodeData = "";
+
+  if (btnBarcodeCopy) {
+    btnBarcodeCopy.addEventListener("click", () => {
+      if (detectedBarcodeData) {
+        window.api.copyToClipboard(detectedBarcodeData);
+        showActionNotification("QR Code / Código copiado!");
+      }
+    });
+  }
+
+  async function detectBarcodesAndQRCodes() {
+    if (!barcodeBanner || !("BarcodeDetector" in window)) return;
+    try {
+      const barcodeDetector = new BarcodeDetector({
+        formats: ["qr_code", "code_128", "code_39", "ean_13", "ean_8", "upc_a", "upc_e", "data_matrix"]
+      });
+      const barcodes = await barcodeDetector.detect(canvas);
+      if (barcodes && barcodes.length > 0) {
+        detectedBarcodeData = barcodes[0].rawValue;
+        barcodeText.textContent = `🔍 Code: ${detectedBarcodeData.length > 40 ? detectedBarcodeData.substring(0, 37) + '...' : detectedBarcodeData}`;
+        barcodeBanner.style.display = "flex";
+      } else {
+        barcodeBanner.style.display = "none";
+        detectedBarcodeData = "";
+      }
+    } catch (err) {
+      console.warn("Barcode detection error:", err);
+    }
+  }
   function performCropAction(x, y, w, h) {
     saveState();
     const tempCanvas = document.createElement("canvas");
