@@ -40,7 +40,7 @@ body, html {
   pointer-events: none;
   display: none;
   background: #000;
-  transform: translate(15px, 15px); /* Position slightly down-right from mouse */
+  transform: translate(15px, 15px);
   z-index: 1000;
 }
 
@@ -61,7 +61,6 @@ body, html {
   pointer-events: none;
 }
 
-/* Crosshair lines inside magnifier */
 #mag-crosshair::before {
   content: '';
   position: absolute;
@@ -121,20 +120,119 @@ body, html {
   to { opacity: 1; transform: translate(-50%, 0); }
 }
 
-/* Quick Menu styles */
-#quick-menu {
+/* Floating Toolbar Styles */
+#cropper-toolbar {
   position: absolute;
-  background: var(--bg-quickmenu, rgba(20, 20, 22, 0.85));
+  background: var(--bg-toolbar, rgba(30, 32, 38, 0.88));
   backdrop-filter: blur(16px) saturate(1.8);
-  border: 1px solid var(--border-quickmenu, rgba(255, 255, 255, 0.12));
+  border: 1px solid var(--border-toolbar, rgba(255, 255, 255, 0.15));
+  border-radius: 12px;
+  padding: 6px 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.55), 0 2px 8px rgba(0, 0, 0, 0.3);
+  z-index: 9999;
+}
+
+.toolbar-dropdown-wrapper {
+  position: relative;
+}
+
+.tb-btn {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text-toolbar, #e3e3e6);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 6px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease, color 0.15s ease, transform 0.1s ease;
+}
+
+.tb-btn svg {
+  flex-shrink: 0;
+  color: currentColor;
+}
+
+.tb-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+}
+
+.tb-btn:active {
+  transform: scale(0.95);
+}
+
+.tb-btn.active {
+  background: rgba(255, 255, 255, 0.18);
+  color: var(--accent-active, #ff4757);
+}
+
+.tb-btn.tb-danger:hover {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+}
+
+.tb-dropdown-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 6px 10px;
   border-radius: 8px;
+  font-weight: 600;
+  flex-direction: row;
+  gap: 6px;
+}
+
+.tb-dropdown-btn:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.tb-divider {
+  width: 1px;
+  height: 18px;
+  background: rgba(255, 255, 255, 0.15);
+  margin: 0 2px;
+}
+
+.tool-with-indicator {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pen-color-indicator {
+  width: 10px;
+  height: 3px;
+  border-radius: 2px;
+  margin-top: 2px;
+  box-shadow: 0 0 2px rgba(0,0,0,0.5);
+}
+
+/* Dropdown Popup Menu */
+.dropdown-popup {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  min-width: 200px;
+  background: var(--bg-dropdown, rgba(22, 24, 28, 0.95));
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border-dropdown, rgba(255, 255, 255, 0.15));
+  border-radius: 10px;
   padding: 6px;
   display: flex;
   flex-direction: column;
   gap: 4px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 1px 3px rgba(255, 255, 255, 0.1);
-  z-index: 9999;
-  min-width: 240px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+  z-index: 10000;
 }
 
 .menu-item {
@@ -152,60 +250,80 @@ body, html {
   display: flex;
   align-items: center;
   gap: 10px;
-  transition: background 0.15s ease, color 0.15s ease, transform 0.1s ease;
+  transition: background 0.15s ease, color 0.15s ease;
   width: 100%;
 }
 
 .menu-item:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.1);
   color: #ffffff;
-}
-
-[data-theme="light"] .menu-item:hover {
-  background: rgba(0, 0, 0, 0.05);
-  color: #000000;
-}
-
-.menu-item:active {
-  background: rgba(255, 255, 255, 0.12);
-  transform: scale(0.98);
 }
 
 .menu-item svg {
   flex-shrink: 0;
-  color: var(--accent-menuitem, #00e5ff); /* duotone vector color theme */
+  color: var(--accent-menuitem, #00e5ff);
 }
 
-/* Light Theme overrides */
+/* Color Palette Popover */
+#color-palette-popover {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(22, 24, 28, 0.95);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  padding: 6px 8px;
+  display: flex;
+  gap: 6px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  z-index: 10000;
+}
+
+.color-swatch {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 1.5px solid rgba(255, 255, 255, 0.4);
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.color-swatch:hover {
+  transform: scale(1.25);
+  border-color: #ffffff;
+}
+
+/* Theme overrides */
 [data-theme="light"] {
-  --bg-quickmenu: rgba(245, 245, 247, 0.9);
-  --border-quickmenu: rgba(0, 0, 0, 0.1);
+  --bg-toolbar: rgba(240, 240, 245, 0.92);
+  --border-toolbar: rgba(0, 0, 0, 0.12);
+  --text-toolbar: #1d1d1f;
+  --bg-dropdown: rgba(255, 255, 255, 0.95);
+  --border-dropdown: rgba(0, 0, 0, 0.12);
   --text-menuitem: #1d1d1f;
   --accent-menuitem: #13BE9E;
+  --accent-active: #ff4757;
 }
 
-/* Linux (Hyprland) Theme Overrides */
 [data-theme="linux"] {
-  --bg-quickmenu: rgba(24, 24, 37, 0.9);
-  --border-quickmenu: #313244;
+  --bg-toolbar: rgba(24, 24, 37, 0.92);
+  --border-toolbar: #313244;
+  --text-toolbar: #cdd6f4;
+  --bg-dropdown: rgba(30, 30, 46, 0.95);
+  --border-dropdown: #45475a;
   --text-menuitem: #cdd6f4;
-  --accent-menuitem: #f5c2e7;
+  --accent-active: #f38ba8;
 }
 
-/* MacOS Theme Overrides */
 [data-theme="macos"] {
-  --bg-quickmenu: rgba(30, 30, 30, 0.9);
-  --border-quickmenu: rgba(255, 255, 255, 0.08);
+  --bg-toolbar: rgba(35, 35, 38, 0.92);
+  --border-toolbar: rgba(255, 255, 255, 0.12);
+  --text-toolbar: #eaeaea;
+  --bg-dropdown: rgba(40, 40, 42, 0.95);
+  --border-dropdown: rgba(255, 255, 255, 0.12);
   --text-menuitem: #eaeaea;
   --accent-menuitem: #007aff;
-}
-
-/* System Theme (Media Queries) */
-@media (prefers-color-scheme: light) {
-  [data-theme="system"] {
-    --bg-quickmenu: rgba(245, 245, 247, 0.9);
-    --border-quickmenu: rgba(0, 0, 0, 0.1);
-    --text-menuitem: #1d1d1f;
-    --accent-menuitem: #13BE9E;
-  }
+  --accent-active: #ff3b30;
 }

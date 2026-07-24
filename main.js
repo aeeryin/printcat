@@ -730,8 +730,8 @@ function openSettingsWindow() {
   const icon = nativeImage.createFromPath(getAppIcon());
 
   settingsWindow = new BrowserWindow({
-    width: 1120,
-    height: 550,
+    width: 1400,
+    height: 620,
     resizable: false,
     icon: icon,
     frame: false, // Frameless for a premium styled view
@@ -1115,6 +1115,97 @@ ipcMain.handle('get-settings', () => {
     platform: process.platform,
     supportsAutoLaunch: SUPPORTS_LOGIN_ITEMS
   };
+});
+
+// Storage Management IPC Handlers
+ipcMain.handle('get-saved-screenshots', async () => {
+  try {
+    const folder = settings.saveFolder;
+    if (!fs.existsSync(folder)) {
+      return [];
+    }
+    const files = fs.readdirSync(folder);
+    const validExtensions = ['.png', '.jpg', '.jpeg', '.webp', '.gif'];
+    const screenshots = [];
+
+    files.forEach(file => {
+      const ext = path.extname(file).toLowerCase();
+      if (validExtensions.includes(ext)) {
+        const filePath = path.join(folder, file);
+        try {
+          const stats = fs.statSync(filePath);
+          screenshots.push({
+            name: file,
+            path: filePath,
+            size: stats.size,
+            date: stats.mtime
+          });
+        } catch (e) {
+          console.error('Failed to stat file:', filePath, e);
+        }
+      }
+    });
+
+    // Sort newest first
+    screenshots.sort((a, b) => new Date(b.date) - new Date(a.date));
+    return screenshots;
+  } catch (err) {
+    console.error('Failed to get saved screenshots:', err);
+    return [];
+  }
+});
+
+ipcMain.handle('delete-screenshot', async (event, filePath) => {
+  try {
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+      return true;
+    }
+    return false;
+  } catch (err) {
+    console.error('Failed to delete screenshot:', filePath, err);
+    return false;
+  }
+});
+
+ipcMain.handle('clear-all-screenshots', async () => {
+  try {
+    const folder = settings.saveFolder;
+    if (!fs.existsSync(folder)) return true;
+
+    const files = fs.readdirSync(folder);
+    const validExtensions = ['.png', '.jpg', '.jpeg', '.webp', '.gif'];
+    
+    files.forEach(file => {
+      const ext = path.extname(file).toLowerCase();
+      if (validExtensions.includes(ext)) {
+        const filePath = path.join(folder, file);
+        try {
+          fs.unlinkSync(filePath);
+        } catch (e) {
+          console.error('Failed to delete file:', filePath, e);
+        }
+      }
+    });
+    return true;
+  } catch (err) {
+    console.error('Failed to clear screenshots:', err);
+    return false;
+  }
+});
+
+ipcMain.handle('open-file-in-folder', async (event, filePath) => {
+  try {
+    const { shell } = require('electron');
+    if (filePath && fs.existsSync(filePath)) {
+      shell.showItemInFolder(filePath);
+      return true;
+    }
+    return false;
+  } catch (err) {
+    console.error('Failed to open file in folder:', err);
+    return false;
+  }
 });
 
 ipcMain.handle('get-default-filename', () => {

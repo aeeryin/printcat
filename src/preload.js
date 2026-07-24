@@ -40,6 +40,10 @@ contextBridge.exposeInMainWorld('api', {
   selectFolder: () => ipcRenderer.invoke('select-folder'),
   joinPath: (dir, file) => ipcRenderer.invoke('join-path', dir, file),
   onSettingsChanged: (callback) => ipcRenderer.on('settings-changed', (event, settings) => callback(settings)),
+  getSavedScreenshots: () => ipcRenderer.invoke('get-saved-screenshots'),
+  deleteScreenshot: (filePath) => ipcRenderer.invoke('delete-screenshot', filePath),
+  clearAllScreenshots: () => ipcRenderer.invoke('clear-all-screenshots'),
+  openFileInFolder: (filePath) => ipcRenderer.invoke('open-file-in-folder', filePath),
 
   // Update APIs
   onUpdateProgress: (callback) => ipcRenderer.on('update-progress', callback),

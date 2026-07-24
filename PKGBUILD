@@ -1,6 +1,6 @@
 # Maintainer: Aeeryin <artisticamente.official@gmail.com>
 pkgname=feathershot
-pkgver=1.2.7
+pkgver=1.2.9
 pkgrel=1
 pkgdesc="Premium, feature-rich cross-platform screenshot tool inspired by Greenshot"
 arch=('x86_64')

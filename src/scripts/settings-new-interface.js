@@ -741,10 +741,159 @@
         if (customText) customText.value = s.customThemeColors.textPrimary || "#f5f5f7";
         if (customTextHex) customTextHex.value = s.customThemeColors.textPrimary || "#f5f5f7";
       }
-      customThemeOptions.style.display = s.theme === "custom" ? "block" : "none";
+      if (customThemeOptions) customThemeOptions.style.display = s.theme === "custom" ? "block" : "none";
     } catch (err) {
       console.error("Failed to load advanced settings:", err);
     }
   }
+
   loadAdvancedSettings();
+
+  // Tab Navigation Handler
+  function initTabNavigation() {
+    const navItems = document.querySelectorAll(".sidebar-nav .nav-item");
+    const tabPanes = document.querySelectorAll(".tab-pane");
+
+    navItems.forEach((item) => {
+      item.addEventListener("click", (e) => {
+        e.preventDefault();
+        const targetTab = item.getAttribute("data-tab");
+        
+        navItems.forEach((i) => i.classList.remove("active"));
+        tabPanes.forEach((p) => p.classList.remove("active"));
+
+        item.classList.add("active");
+        const activePane = document.getElementById(targetTab);
+        if (activePane) {
+          activePane.classList.add("active");
+        }
+      });
+    });
+  }
+
+  initTabNavigation();
+
+  // Storage Modal Elements & Logic
+  const btnOpenStorage = document.getElementById("btn-open-storage");
+  const storageModal = document.getElementById("storage-modal");
+  const btnCloseStorageModal = document.getElementById("btn-close-storage-modal");
+  const btnClearAll = document.getElementById("btn-clear-all");
+  const storageGrid = document.getElementById("storage-grid");
+  const storageCount = document.getElementById("storage-count");
+
+  function formatBytes(bytes) {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+  }
+
+  async function loadStorageGallery() {
+    if (!window.api || !window.api.getSavedScreenshots || !storageGrid) return;
+    storageGrid.innerHTML = `
+      <div class="empty-storage-state">
+        <span>Loading screenshots...</span>
+      </div>
+    `;
+
+    const screenshots = await window.api.getSavedScreenshots();
+    if (storageCount) storageCount.textContent = `${screenshots.length} item${screenshots.length === 1 ? '' : 's'}`;
+
+    if (screenshots.length === 0) {
+      storageGrid.innerHTML = `
+        <div class="empty-storage-state">
+          <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+            <circle cx="8.5" cy="8.5" r="1.5"></circle>
+            <polyline points="21 15 16 10 5 21"></polyline>
+          </svg>
+          <span style="font-size: 14px; font-weight: 600;">No saved screenshots yet</span>
+          <span style="font-size: 12px;">Screenshots saved to your folder will appear here.</span>
+        </div>
+      `;
+      return;
+    }
+
+    storageGrid.innerHTML = '';
+    screenshots.forEach((item) => {
+      const card = document.createElement('div');
+      card.className = 'screenshot-item-card';
+
+      const fileUrl = 'file:///' + item.path.replace(/\\/g, '/');
+      const dateStr = new Date(item.date).toLocaleDateString() + ' ' + new Date(item.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+      card.innerHTML = `
+        <div class="screenshot-thumb-wrapper" title="Click to open file location">
+          <img src="${fileUrl}" class="screenshot-thumb" alt="${item.name}">
+        </div>
+        <div class="screenshot-info">
+          <div class="screenshot-name" title="${item.name}">${item.name}</div>
+          <div class="screenshot-meta">
+            <span>${dateStr}</span>
+            <span>${formatBytes(item.size)}</span>
+          </div>
+          <div class="screenshot-item-actions">
+            <button class="item-action-btn open-file" title="Reveal in File Explorer">
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                <polyline points="15 3 21 3 21 9"></polyline>
+                <line x1="10" y1="14" x2="21" y2="3"></line>
+              </svg>
+              <span>Folder</span>
+            </button>
+            <button class="item-action-btn delete-item" title="Delete Screenshot">
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+      `;
+
+      // Open file in folder
+      const openFolderBtn = card.querySelector('.open-file');
+      const thumbWrapper = card.querySelector('.screenshot-thumb-wrapper');
+      const openAction = () => window.api.openFileInFolder(item.path);
+
+      if (openFolderBtn) openFolderBtn.addEventListener('click', openAction);
+      if (thumbWrapper) thumbWrapper.addEventListener('click', openAction);
+
+      // Delete single file
+      const deleteBtn = card.querySelector('.delete-item');
+      if (deleteBtn) {
+        deleteBtn.addEventListener('click', async () => {
+          await window.api.deleteScreenshot(item.path);
+          loadStorageGallery();
+        });
+      }
+
+      storageGrid.appendChild(card);
+    });
+  }
+
+  if (btnOpenStorage) {
+    btnOpenStorage.addEventListener('click', () => {
+      if (storageModal) {
+        storageModal.style.display = 'flex';
+        loadStorageGallery();
+      }
+    });
+  }
+
+  if (btnCloseStorageModal) {
+    btnCloseStorageModal.addEventListener('click', () => {
+      if (storageModal) storageModal.style.display = 'none';
+    });
+  }
+
+  if (btnClearAll) {
+    btnClearAll.addEventListener('click', async () => {
+      if (confirm('Are you sure you want to delete all saved screenshots? This action cannot be undone.')) {
+        await window.api.clearAllScreenshots();
+        loadStorageGallery();
+      }
+    });
+  }
 })();
