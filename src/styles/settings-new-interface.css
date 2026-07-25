@@ -648,6 +648,19 @@ input[type="text"].recording {
   overflow: hidden;
 }
 
+.sidebar-brand {
+  padding: 16px 18px 12px 18px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brand-logo-with-text {
+  height: 36px;
+  max-width: 100%;
+  object-fit: contain;
+}
+
 .update-banner::before {
   content: '';
   position: absolute;

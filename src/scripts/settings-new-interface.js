@@ -44,7 +44,7 @@
   let pendingUpdateVersion = null;
   const settingsTranslations = {
     en: {
-      "app-title": "Feathershot Settings",
+      "app-title": "Printcat Settings",
       "card-default-action-title": "Default Action",
       "card-default-action-desc": "Choose what happens right after you select and crop a screen area.",
       "action-editor-title": "Open in Editor",
@@ -72,7 +72,7 @@
       "card-printscreen-title": "Windows Print Screen",
       "card-printscreen-desc": "Enable or disable Windows built-in Print Screen snipping.",
       "toggle-printscreen-title": "Enable Windows Print Screen snip",
-      "toggle-printscreen-desc": "Turn this off to let Feathershot handle Print Screen directly.",
+      "toggle-printscreen-desc": "Turn this off to let Printcat handle Print Screen directly.",
       "toggle-printscreen-unsupported-desc": "This feature is only available on Windows.",
       "card-editor-behavior-title": "Editor Behavior",
       "card-editor-behavior-desc": "Configure some other options.",
@@ -83,7 +83,7 @@
       "card-startup-title": "Startup",
       "card-startup-desc": "Control whether the application launches automatically when you sign in.",
       "toggle-startup-title": "Start with system",
-      "toggle-startup-desc": "Feathershot will run in the system tray automatically when you sign in.",
+      "toggle-startup-desc": "Printcat will run in the system tray automatically when you sign in.",
       "toggle-startup-unsupported-desc": "Auto-launch must be configured through your Linux desktop environment.",
       "card-storage-title": "Storage & Naming",
       "card-storage-desc": "Setup where screenshots are saved and how files are named.",
@@ -108,7 +108,7 @@
       "btn-cancel-settings": "Cancel"
     },
     pt: {
-      "app-title": "Configura\xE7\xF5es do Feathershot",
+      "app-title": "Configura\xE7\xF5es do Printcat",
       "card-default-action-title": "A\xE7\xE3o Padr\xE3o",
       "card-default-action-desc": "Escolha o que acontece logo ap\xF3s voc\xEA selecionar e recortar uma \xE1rea da tela.",
       "action-editor-title": "Abrir no Editor",
@@ -136,7 +136,7 @@
       "card-printscreen-title": "Print Screen do Windows",
       "card-printscreen-desc": "Ative ou desative a captura nativa via Print Screen do Windows.",
       "toggle-printscreen-title": "Ativar captura do Print Screen do Windows",
-      "toggle-printscreen-desc": "Desative isso para deixar o Feathershot controlar o Print Screen diretamente.",
+      "toggle-printscreen-desc": "Desative isso para deixar o Printcat controlar o Print Screen diretamente.",
       "toggle-printscreen-unsupported-desc": "Este recurso est\xE1 dispon\xEDvel apenas no Windows.",
       "card-editor-behavior-title": "Outros",
       "card-editor-behavior-desc": "Configure algumas outras op\xE7\xF5es.",
@@ -147,7 +147,7 @@
       "card-startup-title": "Inicializa\xE7\xE3o",
       "card-startup-desc": "Controle se o aplicativo inicia automaticamente ao fazer login.",
       "toggle-startup-title": "Iniciar com o sistema",
-      "toggle-startup-desc": "O Feathershot ser\xE1 executado na bandeja do sistema automaticamente ao fazer login.",
+      "toggle-startup-desc": "O Printcat ser\xE1 executado na bandeja do sistema automaticamente ao fazer login.",
       "toggle-startup-unsupported-desc": "No Linux, configure a inicializa\xE7\xE3o autom\xE1tica pelo seu ambiente gr\xE1fico.",
       "card-storage-title": "Armazenamento e Nomea\xE7\xE3o",
       "card-storage-desc": "Configure onde as capturas de tela ser\xE3o salvas e como os arquivos ser\xE3o nomeados.",
@@ -172,7 +172,7 @@
       "btn-cancel-settings": "Cancelar"
     },
     es: {
-      "app-title": "Configuraci\xF3n de Feathershot",
+      "app-title": "Configuraci\xF3n de Printcat",
       "card-default-action-title": "Acci\xF3n Predeterminada",
       "card-default-action-desc": "Elija qu\xE9 sucede despu\xE9s de seleccionar y recortar un \xE1rea de pantalla.",
       "action-editor-title": "Abrir en Editor",
@@ -207,7 +207,7 @@
       "btn-cancel-settings": "Cancelar"
     },
     fr: {
-      "app-title": "Param\xE8tres Feathershot",
+      "app-title": "Param\xE8tres Printcat",
       "card-default-action-title": "Action par D\xE9faut",
       "card-default-action-desc": "Choisissez ce qui se passe apr\xE8s la s\xE9lection et le recadrage d'une zone.",
       "action-editor-title": "Ouvrir dans l'\xC9diteur",
@@ -239,7 +239,7 @@
       "btn-cancel-settings": "Annuler"
     },
     de: {
-      "app-title": "Feathershot Einstellungen",
+      "app-title": "Printcat Einstellungen",
       "card-default-action-title": "Standardaktion",
       "card-default-action-desc": "W\xE4hlen Sie, was nach dem Ausw\xE4hlen und Zuschneiden passiert.",
       "action-editor-title": "Im Editor \xF6ffnen",
@@ -271,7 +271,7 @@
       "btn-cancel-settings": "Abbrechen"
     },
     ja: {
-      "app-title": "Feathershot \u8A2D\u5B9A",
+      "app-title": "Printcat \u8A2D\u5B9A",
       "card-default-action-title": "\u30C7\u30D5\u30A9\u30EB\u30C8\u30A2\u30AF\u30B7\u30E7\u30F3",
       "card-default-action-desc": "\u753B\u9762\u9818\u57DF\u3092\u9078\u629E\u3057\u3066\u30AD\u30E3\u30D7\u30C1\u30E3\u3057\u305F\u5F8C\u306E\u52D5\u4F5C\u3092\u9078\u629E\u3057\u307E\u3059\u3002",
       "action-editor-title": "\u30A8\u30C7\u30A3\u30BF\u3067\u958B\u304F",
@@ -299,7 +299,7 @@
       "btn-cancel-settings": "\u30AD\u30E3\u30F3\u30BB\u30EB"
     },
     ko: {
-      "app-title": "Feathershot \uC124\uC815",
+      "app-title": "Printcat \uC124\uC815",
       "card-default-action-title": "\uAE30\uBCF8 \uB3D9\uC791",
       "card-default-action-desc": "\uD654\uBA74 \uC601\uC5ED\uC744 \uC120\uD0DD\uD558\uACE0 \uCEA1\uCC98\uD55C \uD6C4\uC758 \uB3D9\uC791\uC744 \uC120\uD0DD\uD569\uB2C8\uB2E4.",
       "action-editor-title": "\uD3B8\uC9D1\uAE30\uC5D0\uC11C \uC5F4\uAE30",
@@ -327,7 +327,7 @@
       "btn-cancel-settings": "\uCDE8\uC18C"
     },
     zh: {
-      "app-title": "Feathershot \u8BBE\u7F6E",
+      "app-title": "Printcat \u8BBE\u7F6E",
       "card-default-action-title": "\u9ED8\u8BA4\u64CD\u4F5C",
       "card-default-action-desc": "\u9009\u62E9\u622A\u56FE\u540E\u7684\u64CD\u4F5C\u3002",
       "action-editor-title": "\u5728\u7F16\u8F91\u5668\u4E2D\u6253\u5F00",
@@ -570,7 +570,7 @@
       language: languageSelect.value,
       theme: themeSelect.value,
       watermarkEnabled: toggleWatermark ? toggleWatermark.checked : false,
-      watermarkText: watermarkText ? watermarkText.value : "Feathershot",
+      watermarkText: watermarkText ? watermarkText.value : "Printcat",
       watermarkPosition: watermarkPosition ? watermarkPosition.value : "bottom-right",
       watermarkOpacity: watermarkOpacity ? watermarkOpacity.value / 100 : 0.3,
       watermarkLogoOnly: toggleWatermarkLogoOnly ? toggleWatermarkLogoOnly.checked : false,
@@ -594,7 +594,7 @@
   const updateTranslations = {
     en: {
       available_title: "Update Available \u2014 v{version}",
-      available_desc: "A new version of Feathershot is available. Click to download.",
+      available_desc: "A new version of Printcat is available. Click to download.",
       downloading_title: "Downloading Update \u2014 v{version}",
       downloading_desc: "Please wait while the update is being downloaded...",
       downloaded_title: "Update Ready \u2014 v{version}",
@@ -606,7 +606,7 @@
     },
     pt: {
       available_title: "Atualiza\xE7\xE3o Dispon\xEDvel \u2014 v{version}",
-      available_desc: "Uma nova vers\xE3o do Feathershot est\xE1 dispon\xEDvel. Clique para baixar.",
+      available_desc: "Uma nova vers\xE3o do Printcat est\xE1 dispon\xEDvel. Clique para baixar.",
       downloading_title: "Baixando Atualiza\xE7\xE3o \u2014 v{version}",
       downloading_desc: "Aguarde enquanto a atualiza\xE7\xE3o est\xE1 sendo baixada...",
       downloaded_title: "Atualiza\xE7\xE3o Pronta \u2014 v{version}",
@@ -724,7 +724,7 @@
       const s = await window.api.getSettings();
       if (toggleWatermark) toggleWatermark.checked = s.watermarkEnabled || false;
       if (watermarkOptions) watermarkOptions.style.display = s.watermarkEnabled ? "block" : "none";
-      if (watermarkText) watermarkText.value = s.watermarkText || "Feathershot";
+      if (watermarkText) watermarkText.value = s.watermarkText || "Printcat";
       if (watermarkPosition) watermarkPosition.value = s.watermarkPosition || "bottom-right";
       if (watermarkOpacity) {
         watermarkOpacity.value = s.watermarkOpacity * 100 || 30;

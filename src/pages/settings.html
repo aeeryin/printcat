@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Feathershot - Settings</title>
+  <title>Printcat - Settings</title>
   <script>
     (function () {
       const theme = localStorage.getItem('theme') || 'dark';
@@ -19,8 +19,8 @@
   <!-- Custom Titlebar -->
   <div id="titlebar">
     <div class="title-left">
-      <img src="../assets/icons/main.png" class="logo-icon" alt="Feathershot">
-      <span class="app-title" id="app-title">Feathershot Settings</span>
+      <img src="../assets/images/logoNoText.png" class="logo-icon" alt="Printcat">
+      <span class="app-title" id="app-title">Printcat Settings</span>
     </div>
     <div class="window-controls">
       <button id="win-close" class="win-btn close" title="Close">
@@ -35,8 +35,7 @@
     <!-- Sidebar Navigation -->
     <aside id="settings-sidebar">
       <div class="sidebar-brand">
-        <img src="../assets/icons/main.png" class="logo-icon brand-logo" alt="Logo">
-        <span class="brand-text">Feathershot</span>
+        <img src="../assets/images/logoWithText.png" class="brand-logo-with-text" alt="Printcat">
       </div>
 
       <nav class="sidebar-nav">
@@ -200,7 +199,7 @@
               <label class="toggle-label" for="toggle-startup">
                 <div class="toggle-text">
                   <strong id="toggle-startup-title">Start with system</strong>
-                  <span id="toggle-startup-desc">Feathershot will run in the system tray automatically when you sign in.</span>
+                  <span id="toggle-startup-desc">Printcat will run in the system tray automatically when you sign in.</span>
                 </div>
                 <div class="toggle-switch">
                   <input type="checkbox" id="toggle-startup">
@@ -358,7 +357,7 @@
             <div id="watermark-options" style="display:none;margin-top:16px;">
               <div class="setting-field">
                 <label class="field-label">Watermark Text</label>
-                <input type="text" id="watermark-text" value="Feathershot" placeholder="Enter watermark text">
+                <input type="text" id="watermark-text" value="Printcat" placeholder="Enter watermark text">
               </div>
               <div class="toggle-row">
                 <label class="toggle-label" for="toggle-watermark-logo-only">

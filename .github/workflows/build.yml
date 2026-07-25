@@ -142,7 +142,7 @@ jobs:
           cp "$TARBALL" pkgbuild/
 
           # Get version from filename
-          VERSION=$(basename "$TARBALL" | sed 's/Feathershot-\(.*\)-linux\.tar\.xz/\1/')
+          VERSION=$(basename "$TARBALL" | sed 's/Printcat-\(.*\)-linux\.tar\.xz/\1/')
           echo "Version: $VERSION"
 
           # Update PKGBUILD version
@@ -151,37 +151,37 @@ jobs:
 
           # Extract tarball to get file list for sha256sums
           cd pkgbuild
-          SHA256=$(sha256sum "Feathershot-${VERSION}-linux.tar.xz" | cut -d' ' -f1)
+          SHA256=$(sha256sum "Printcat-${VERSION}-linux.tar.xz" | cut -d' ' -f1)
           sed -i "s/sha256sums=.*/sha256sums=('${SHA256}')/" PKGBUILD
 
           # Build package using makepkg (simulated - we create the package structure manually)
-          PKGNAME="feathershot-${VERSION}-1-x86_64.pkg.tar.zst"
-          mkdir -p "feathershot-pkg/opt/feathershot"
-          tar xf "Feathershot-${VERSION}-linux.tar.xz" -C "feathershot-pkg/opt/feathershot" --strip-components=0
+          PKGNAME="printcat-${VERSION}-1-x86_64.pkg.tar.zst"
+          mkdir -p "printcat-pkg/opt/printcat"
+          tar xf "Printcat-${VERSION}-linux.tar.xz" -C "printcat-pkg/opt/printcat" --strip-components=0
 
           # Create symlink directory
-          mkdir -p "feathershot-pkg/usr/bin"
-          ln -s "/opt/feathershot/feathershot" "feathershot-pkg/usr/bin/feathershot"
+          mkdir -p "printcat-pkg/usr/bin"
+          ln -s "/opt/printcat/printcat" "printcat-pkg/usr/bin/printcat"
 
           # Copy desktop file and icon if they exist
-          mkdir -p "feathershot-pkg/usr/share/applications"
-          mkdir -p "feathershot-pkg/usr/share/pixmaps"
-          if [ -f "feathershot-pkg/opt/feathershot/feathershot.desktop" ]; then
-            cp "feathershot-pkg/opt/feathershot/feathershot.desktop" "feathershot-pkg/usr/share/applications/"
+          mkdir -p "printcat-pkg/usr/share/applications"
+          mkdir -p "printcat-pkg/usr/share/pixmaps"
+          if [ -f "printcat-pkg/opt/printcat/printcat.desktop" ]; then
+            cp "printcat-pkg/opt/printcat/printcat.desktop" "printcat-pkg/usr/share/applications/"
           fi
-          if [ -f "feathershot-pkg/opt/feathershot/resources/app/src/assets/icons/main.png" ]; then
-            cp "feathershot-pkg/opt/feathershot/resources/app/src/assets/icons/main.png" "feathershot-pkg/usr/share/pixmaps/feathershot.png"
+          if [ -f "printcat-pkg/opt/printcat/resources/app/src/assets/icons/main.png" ]; then
+            cp "printcat-pkg/opt/printcat/resources/app/src/assets/icons/main.png" "printcat-pkg/usr/share/pixmaps/printcat.png"
           fi
 
           # Create .PKGINFO
-          cat > "feathershot-pkg/.PKGINFO" <<EOF
-          pkgname = feathershot
+          cat > "printcat-pkg/.PKGINFO" <<EOF
+          pkgname = printcat
           pkgver = ${VERSION}-1
-          pkgdesc = Premium, feature-rich cross-platform screenshot tool inspired by Greenshot
-          url = https://github.com/aeeryin/Feathershot
+          pkgdesc = Premium, feature-rich cross-platform screenshot tool
+          url = https://github.com/aeeryin/Printcat
           builddate = $(date +%s)
           packager = Aeeryin <artisticamente.official@gmail.com>
-          size = $(du -sb feathershot-pkg | cut -f1)
+          size = $(du -sb printcat-pkg | cut -f1)
           arch = x86_64
           license = MIT
           depends = electron
@@ -194,7 +194,7 @@ jobs:
           EOF
 
           # Create the package using tar
-          cd feathershot-pkg
+          cd printcat-pkg
           tar cf "../${PKGNAME}" .PKGINFO opt usr
           cd ..
 
@@ -240,7 +240,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
-          name: "Feathershot ${{ github.ref_name }}"
+          name: "Printcat ${{ github.ref_name }}"
           draft: false
           prerelease: false
           generate_release_notes: true

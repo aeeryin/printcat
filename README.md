@@ -1,6 +1,6 @@
-# Feathershot
+# Printcat
 
-Feathershot is a premium, feature-rich screenshot tool for Windows, macOS, and Linux, inspired by Greenshot and built with Electron.
+Printcat is a premium, feature-rich screenshot tool for Windows, macOS, and Linux, inspired by Greenshot and built with Electron.
 
 ## Platforms
 
@@ -20,15 +20,15 @@ Feathershot is a premium, feature-rich screenshot tool for Windows, macOS, and L
 
 ## Download
 
-Download packaged builds from the [GitHub Releases](https://github.com/aeeryin/Feathershot/releases) page.
+Download packaged builds from the [GitHub Releases](https://github.com/aeeryin/Printcat/releases) page.
 
 Expected release assets:
 
-- `Feathershot-<version>-windows.exe`
-- `Feathershot-<version>-macos-x64.dmg`
-- `Feathershot-<version>-macos-arm64.dmg`
-- `Feathershot-<version>-linux-x64.AppImage`
-- `Feathershot-<version>-linux-x64.deb`
+- `Printcat-<version>-windows.exe`
+- `Printcat-<version>-macos-x64.dmg`
+- `Printcat-<version>-macos-arm64.dmg`
+- `Printcat-<version>-linux-x64.AppImage`
+- `Printcat-<version>-linux-x64.deb`
 
 ## Development
 

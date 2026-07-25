@@ -23,7 +23,7 @@ const DEFAULT_SHORTCUT = 'CommandOrControl+Shift+S';
 const DEFAULT_SETTINGS = {
   shortcut: DEFAULT_SHORTCUT,
   defaultAction: 'editor', // 'editor' | 'clipboard' | 'save'
-  saveFolder: path.join(app.getPath('pictures'), 'Feathershot'),
+  saveFolder: path.join(app.getPath('pictures'), 'Printcat'),
   imageFormat: 'png', // 'png' | 'jpeg'
   fileNamePattern: 'Screenshot_{yyyy}-{mm}-{dd}_{hh}-{mm}-{ss}',
   alwaysMaximized: false,
@@ -32,7 +32,7 @@ const DEFAULT_SETTINGS = {
   language: 'auto', // 'auto' | 'en' | 'pt' | 'es' | 'ja' | 'ko' | 'de' | 'zh' | 'fr'
   theme: 'dark', // 'dark' | 'light' | 'linux' | 'macos'
   watermarkEnabled: false,
-  watermarkText: 'Feathershot',
+  watermarkText: 'Printcat',
   watermarkPosition: 'bottom-right',
   watermarkOpacity: 0.3,
   watermarkLogoOnly: false,
@@ -165,7 +165,7 @@ function createTray() {
   try {
     const icon = nativeImage.createFromPath(getAppIcon());
     tray = new Tray(icon);
-    tray.setToolTip('Feathershot');
+    tray.setToolTip('Printcat');
 
     const osName = process.platform === 'win32' ? 'Windows' : process.platform === 'darwin' ? 'macOS' : 'Linux';
     const cpuArch = process.arch === 'x64' ? '64-bit' : process.arch === 'arm64' ? 'ARM64' : '32-bit';
@@ -189,7 +189,7 @@ function createTray() {
         } else {
           dialog.showMessageBox({
             type: 'info',
-            title: 'Feathershot',
+            title: 'Printcat',
             message: 'Auto-update is only active in the packaged/production application.'
           });
         }
@@ -236,13 +236,13 @@ function registerShortcuts() {
         if (fallbackRegistered && !hasShownShortcutConflict) {
           hasShownShortcutConflict = true;
           const lang = getResolvedLanguage();
-          const title = lang === 'pt' ? 'Feathershot - Atalho em Conflito' : 'Feathershot - Shortcut Conflict';
+          const title = lang === 'pt' ? 'Printcat - Atalho em Conflito' : 'Printcat - Shortcut Conflict';
           const message = lang === 'pt' 
             ? 'Não foi possível registrar a tecla PrintScreen.' 
             : 'Could not register the PrintScreen key.';
           const detail = lang === 'pt'
-            ? `O Windows ou outro aplicativo está usando a tecla PrintScreen. O Feathershot usará o atalho alternativo: Ctrl+Shift+S.\n\nPara liberar a tecla PrintScreen:\n1. Abra as Configurações do Windows.\n2. Vá em Acessibilidade > Teclado.\n3. Desative a opção "Usar o botão Print screen para abrir a captura de tela".`
-            : `Windows or another application is using the PrintScreen key. Feathershot will use the fallback shortcut: Ctrl+Shift+S.\n\nTo free up the PrintScreen key:\n1. Open Windows Settings.\n2. Go to Accessibility > Keyboard.\n3. Turn off "Use the Print screen key to open screen capture".`;
+            ? `O Windows ou outro aplicativo está usando a tecla PrintScreen. O Printcat usará o atalho alternativo: Ctrl+Shift+S.\n\nPara liberar a tecla PrintScreen:\n1. Abra as Configurações do Windows.\n2. Vá em Acessibilidade > Teclado.\n3. Desative a opção "Usar o botão Print screen para abrir a captura de tela".`
+            : `Windows or another application is using the PrintScreen key. Printcat will use the fallback shortcut: Ctrl+Shift+S.\n\nTo free up the PrintScreen key:\n1. Open Windows Settings.\n2. Go to Accessibility > Keyboard.\n3. Turn off "Use the Print screen key to open screen capture".`;
           
           const showDialog = () => {
             dialog.showMessageBox({
@@ -305,33 +305,33 @@ function getActiveDisplay() {
 function captureScreenViaPowerShell(activeDisplay) {
   return new Promise((resolve, reject) => {
     if (!activeDisplay) activeDisplay = getActiveDisplay();
-    const tmpFile = path.join(os.tmpdir(), `feathershot_${activeDisplay.id}_${Date.now()}.png`);
+    const tmpFile = path.join(os.tmpdir(), `printcat_${activeDisplay.id}_${Date.now()}.png`);
     const escapedPath = tmpFile.replace(/\\/g, '\\\\');
     const { x, y, width, height } = activeDisplay.bounds;
 
     const script = `Add-Type -AssemblyName System.Drawing,System.Windows.Forms; $b=New-Object System.Drawing.Bitmap(${width},${height}); $g=[System.Drawing.Graphics]::FromImage($b); $g.CopyFromScreen(${x},${y},0,0,New-Object System.Drawing.Size(${width},${height})); $b.Save('${escapedPath}',[System.Drawing.Imaging.ImageFormat]::Png); $g.Dispose(); $b.Dispose();`;
 
-    console.log('[Feathershot] PowerShell: salvando screenshot do display ativo em', tmpFile);
-    console.log('[Feathershot] PowerShell script:', script);
+    console.log('[Printcat] PowerShell: salvando screenshot do display ativo em', tmpFile);
+    console.log('[Printcat] PowerShell script:', script);
 
     execFile('powershell', ['-STA', '-NoProfile', '-NonInteractive', '-Command', script], { timeout: 30000 }, (error, stdout, stderr) => {
       if (error) {
-        console.error('[Feathershot] PowerShell ERRO:', error.message);
-        if (stderr) console.error('[Feathershot] PowerShell stderr:', stderr);
+        console.error('[Printcat] PowerShell ERRO:', error.message);
+        if (stderr) console.error('[Printcat] PowerShell stderr:', stderr);
         return reject(new Error(stderr?.trim() || error.message));
       }
-      console.log('[Feathershot] PowerShell executou com sucesso');
+      console.log('[Printcat] PowerShell executou com sucesso');
       try {
         if (!fs.existsSync(tmpFile)) {
-          console.error('[Feathershot] Arquivo de screenshot NÃO foi criado:', tmpFile);
+          console.error('[Printcat] Arquivo de screenshot NÃO foi criado:', tmpFile);
           return reject(new Error('PowerShell não criou o arquivo de screenshot'));
         }
         const data = fs.readFileSync(tmpFile);
-        console.log('[Feathershot] Arquivo lido, tamanho:', data.length, 'bytes');
+        console.log('[Printcat] Arquivo lido, tamanho:', data.length, 'bytes');
         try { fs.unlinkSync(tmpFile); } catch (_) {}
         resolve(`data:image/png;base64,${data.toString('base64')}`);
       } catch (e) {
-        console.error('[Feathershot] Erro ao ler arquivo:', e);
+        console.error('[Printcat] Erro ao ler arquivo:', e);
         reject(e);
       }
     });
@@ -340,13 +340,13 @@ function captureScreenViaPowerShell(activeDisplay) {
 
 // Screenshot using desktopCapturer (fallback)
 async function captureScreenViaDesktopCapturer(activeDisplay) {
-  console.log('[Feathershot] Usando desktopCapturer...');
+  console.log('[Printcat] Usando desktopCapturer...');
 
   if (!activeDisplay) activeDisplay = getActiveDisplay();
   const { width, height } = activeDisplay.bounds;
   const scaleFactor = activeDisplay.scaleFactor;
 
-  console.log('[Feathershot] Display ativo:', activeDisplay.id, { width, height, scaleFactor });
+  console.log('[Printcat] Display ativo:', activeDisplay.id, { width, height, scaleFactor });
 
   const sources = await desktopCapturer.getSources({
     types: ['screen'],
@@ -356,7 +356,7 @@ async function captureScreenViaDesktopCapturer(activeDisplay) {
     }
   });
 
-  console.log('[Feathershot] desktopCapturer retornou', sources.length, 'fonte(s)');
+  console.log('[Printcat] desktopCapturer retornou', sources.length, 'fonte(s)');
 
   if (sources.length > 0) {
     let source = sources.find(s => s.id === `screen:${activeDisplay.id}`);
@@ -372,15 +372,15 @@ async function captureScreenViaDesktopCapturer(activeDisplay) {
     }
     
     const thumbnail = source.thumbnail;
-    console.log('[Feathershot] Thumbnail vazio:', thumbnail.isEmpty(), 'size:', thumbnail.getSize());
+    console.log('[Printcat] Thumbnail vazio:', thumbnail.isEmpty(), 'size:', thumbnail.getSize());
     if (!thumbnail.isEmpty()) {
       const url = thumbnail.toDataURL();
-      console.log('[Feathershot] toDataURL tamanho:', url.length);
+      console.log('[Printcat] toDataURL tamanho:', url.length);
       return url;
     }
     
     // Fallback: try without DPI scaling
-    console.log('[Feathershot] Tentando sem DPI scaling...');
+    console.log('[Printcat] Tentando sem DPI scaling...');
     const fallbackSources = await desktopCapturer.getSources({
       types: ['screen'],
       thumbnailSize: { width, height }
@@ -399,7 +399,7 @@ async function captureScreenViaDesktopCapturer(activeDisplay) {
     
     if (fallbackSource && !fallbackSource.thumbnail.isEmpty()) {
       const url = fallbackSource.thumbnail.toDataURL();
-      console.log('[Feathershot] Fallback toDataURL tamanho:', url.length);
+      console.log('[Printcat] Fallback toDataURL tamanho:', url.length);
       return url;
     }
   }
@@ -408,19 +408,19 @@ async function captureScreenViaDesktopCapturer(activeDisplay) {
 
 // Screenshot: try desktopCapturer first (fast, in-process), fallback to PowerShell on Windows.
 async function captureScreen(activeDisplay) {
-  console.log('[Feathershot] Iniciando captura de tela...');
+  console.log('[Printcat] Iniciando captura de tela...');
   try {
     const result = await captureScreenViaDesktopCapturer(activeDisplay);
-    console.log('[Feathershot] Captura via desktopCapturer OK');
+    console.log('[Printcat] Captura via desktopCapturer OK');
     return result;
   } catch (err) {
     if (IS_WINDOWS) {
-      console.warn('[Feathershot] desktopCapturer falhou, tentando PowerShell:', err.message);
+      console.warn('[Printcat] desktopCapturer falhou, tentando PowerShell:', err.message);
       return await captureScreenViaPowerShell(activeDisplay);
     }
 
     const platformHint = IS_MACOS
-      ? 'On macOS, grant Screen Recording permission to Feathershot in System Settings.'
+      ? 'On macOS, grant Screen Recording permission to Printcat in System Settings.'
       : 'On Linux, make sure the desktop session allows screen capture through X11 or the active portal.';
     throw new Error(`${platformHint}\n\nOriginal error: ${err.message}`);
   }
@@ -445,7 +445,7 @@ async function captureFullscreenDirectly() {
     handleScreenshotResult(dataUrl);
   } catch (err) {
     console.error('Fullscreen capture failed:', err);
-    dialog.showErrorBox('Feathershot - Erro na Captura', `Não foi possível capturar a tela.\n\n${err.message}`);
+    dialog.showErrorBox('Printcat - Erro na Captura', `Não foi possível capturar a tela.\n\n${err.message}`);
   }
 }
 
@@ -500,7 +500,7 @@ async function triggerScreenCapture() {
     restoreEditorAfterCrop = false;
     restoreSettingsAfterCrop = false;
     
-    dialog.showErrorBox('Feathershot - Erro na Captura', `Não foi possível capturar a tela.\n\n${err.message}`);
+    dialog.showErrorBox('Printcat - Erro na Captura', `Não foi possível capturar a tela.\n\n${err.message}`);
   }
 }
 
@@ -514,7 +514,7 @@ function handleScreenshotResult(dataUrl, width, height) {
     // Show a native notification (non-blocking)
     if (Notification.isSupported()) {
       new Notification({
-        title: 'Feathershot',
+        title: 'Printcat',
         body: getResolvedLanguage() === 'pt' 
           ? 'Captura de tela copiada para a área de transferência!' 
           : 'Screenshot copied to clipboard!',
@@ -530,7 +530,7 @@ function handleScreenshotResult(dataUrl, width, height) {
       // Show a native notification (non-blocking)
       if (Notification.isSupported()) {
         new Notification({
-          title: 'Feathershot',
+          title: 'Printcat',
           body: getResolvedLanguage() === 'pt'
             ? `Captura de tela salva diretamente em:\n${savePath}`
             : `Screenshot saved directly to:\n${savePath}`,
@@ -1366,15 +1366,15 @@ ipcMain.handle('save-to-desktop', async (event, dataUrl) => {
   try {
     const buffer = Buffer.from(dataUrl.split(',')[1], 'base64');
     const fileName = generateFileName();
-    const feathershotFolder = path.join(app.getPath('desktop'), 'Feathershot');
-    if (!fs.existsSync(feathershotFolder)) {
-      fs.mkdirSync(feathershotFolder, { recursive: true });
+    const printcatFolder = path.join(app.getPath('desktop'), 'Printcat');
+    if (!fs.existsSync(printcatFolder)) {
+      fs.mkdirSync(printcatFolder, { recursive: true });
     }
-    const savePath = path.join(feathershotFolder, fileName);
+    const savePath = path.join(printcatFolder, fileName);
     fs.writeFileSync(savePath, buffer);
     return true;
   } catch (err) {
-    console.error('Failed to save to Feathershot folder:', err);
+    console.error('Failed to save to Printcat folder:', err);
     return false;
   }
 });
@@ -1537,7 +1537,7 @@ async function triggerColorPicker() {
 
     if (Notification.isSupported()) {
       new Notification({
-        title: 'Feathershot Color Picker',
+        title: 'Printcat Color Picker',
         body: getResolvedLanguage() === 'pt'
           ? `Cor ${hex} (${rgbStr}) copiada!`
           : `Color ${hex} (${rgbStr}) copied!`,

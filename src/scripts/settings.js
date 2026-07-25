@@ -27,7 +27,7 @@
   let pendingUpdateVersion = null;
   const settingsTranslations = {
     en: {
-      "app-title": "Feathershot Settings",
+      "app-title": "Printcat Settings",
       "card-default-action-title": "Default Action",
       "card-default-action-desc": "Choose what happens right after you select and crop a screen area.",
       "action-editor-title": "Open in Editor",
@@ -49,7 +49,7 @@
       "card-printscreen-title": "Windows Print Screen",
       "card-printscreen-desc": "Enable or disable Windows built-in Print Screen snipping.",
       "toggle-printscreen-title": "Enable Windows Print Screen snip",
-      "toggle-printscreen-desc": "Turn this off to let Feathershot handle Print Screen directly.",
+      "toggle-printscreen-desc": "Turn this off to let Printcat handle Print Screen directly.",
       "toggle-printscreen-unsupported-desc": "This feature is only available on Windows.",
       "card-editor-behavior-title": "Others",
       "card-editor-behavior-desc": "Configure some other options.",
@@ -58,7 +58,7 @@
       "card-startup-title": "Startup",
       "card-startup-desc": "Control whether the application launches automatically when you sign in.",
       "toggle-startup-title": "Start with system",
-      "toggle-startup-desc": "Feathershot will run in the system tray automatically when you sign in.",
+      "toggle-startup-desc": "Printcat will run in the system tray automatically when you sign in.",
       "toggle-startup-unsupported-desc": "Auto-launch must be configured through your Linux desktop environment.",
       "card-storage-title": "Storage & Naming",
       "card-storage-desc": "Setup where screenshots are saved and how files are named.",
@@ -82,7 +82,7 @@
       "btn-cancel-settings": "Cancel"
     },
     pt: {
-      "app-title": "Configura\xE7\xF5es do Feathershot",
+      "app-title": "Configura\xE7\xF5es do Printcat",
       "card-default-action-title": "A\xE7\xE3o Padr\xE3o",
       "card-default-action-desc": "Escolha o que acontece logo ap\xF3s voc\xEA selecionar e recortar uma \xE1rea da tela.",
       "action-editor-title": "Abrir no Editor",
@@ -104,7 +104,7 @@
       "card-printscreen-title": "Print Screen do Windows",
       "card-printscreen-desc": "Ative ou desative a captura nativa via Print Screen do Windows.",
       "toggle-printscreen-title": "Ativar captura do Print Screen do Windows",
-      "toggle-printscreen-desc": "Desative isso para deixar o Feathershot controlar o Print Screen diretamente.",
+      "toggle-printscreen-desc": "Desative isso para deixar o Printcat controlar o Print Screen diretamente.",
       "toggle-printscreen-unsupported-desc": "Este recurso est\xE1 dispon\xEDvel apenas no Windows.",
       "card-editor-behavior-title": "Outros",
       "card-editor-behavior-desc": "Configure algumas outras op\xE7\xF5es.",
@@ -113,7 +113,7 @@
       "card-startup-title": "Inicializa\xE7\xE3o",
       "card-startup-desc": "Controle se o aplicativo inicia automaticamente ao fazer login.",
       "toggle-startup-title": "Iniciar com o sistema",
-      "toggle-startup-desc": "O Feathershot ser\xE1 executado na bandeja do sistema automaticamente ao fazer login.",
+      "toggle-startup-desc": "O Printcat ser\xE1 executado na bandeja do sistema automaticamente ao fazer login.",
       "toggle-startup-unsupported-desc": "No Linux, configure a inicializa\xE7\xE3o autom\xE1tica pelo seu ambiente gr\xE1fico.",
       "card-storage-title": "Armazenamento e Nomea\xE7\xE3o",
       "card-storage-desc": "Configure onde as capturas de tela ser\xE3o salvas e como os arquivos ser\xE3o nomeados.",
@@ -367,7 +367,7 @@
   const updateTranslations = {
     en: {
       available_title: "Update Available \u2014 v{version}",
-      available_desc: "A new version of Feathershot is available. Click to download.",
+      available_desc: "A new version of Printcat is available. Click to download.",
       downloading_title: "Downloading Update \u2014 v{version}",
       downloading_desc: "Please wait while the update is being downloaded...",
       downloaded_title: "Update Ready \u2014 v{version}",
@@ -379,7 +379,7 @@
     },
     pt: {
       available_title: "Atualiza\xE7\xE3o Dispon\xEDvel \u2014 v{version}",
-      available_desc: "Uma nova vers\xE3o do Feathershot est\xE1 dispon\xEDvel. Clique para baixar.",
+      available_desc: "Uma nova vers\xE3o do Printcat est\xE1 dispon\xEDvel. Clique para baixar.",
       downloading_title: "Baixando Atualiza\xE7\xE3o \u2014 v{version}",
       downloading_desc: "Aguarde enquanto a atualiza\xE7\xE3o est\xE1 sendo baixada...",
       downloaded_title: "Atualiza\xE7\xE3o Pronta \u2014 v{version}",

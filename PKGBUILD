@@ -1,15 +1,15 @@
 # Maintainer: Aeeryin <artisticamente.official@gmail.com>
-pkgname=feathershot
+pkgname=printcat
 pkgver=1.2.9
 pkgrel=1
-pkgdesc="Premium, feature-rich cross-platform screenshot tool inspired by Greenshot"
+pkgdesc="Premium, feature-rich cross-platform screenshot tool"
 arch=('x86_64')
-url="https://github.com/aeeryin/Feathershot"
+url="https://github.com/aeeryin/Printcat"
 license=('MIT')
 depends=('electron' 'libnotify' 'libxtst' 'nss' 'libxss' 'libappindicator-gtk3' 'libsecret')
 makedepends=('tar' 'squashfs-tools' 'patchelf')
 options=(!strip)
-source=("${url}/releases/download/v${pkgver}/Feathershot-${pkgver}-linux.tar.xz")
+source=("${url}/releases/download/v${pkgver}/Printcat-${pkgver}-linux.tar.xz")
 sha256sums=('SKIP')
 
 package() {
@@ -17,7 +17,7 @@ package() {
 
     # Create directory structure
     install -dm755 "${pkgdir}/opt/${pkgname}"
-    tar xf "Feathershot-${pkgver}-linux.tar.xz" -C "${pkgdir}/opt/${pkgname}" --strip-components=0
+    tar xf "Printcat-${pkgver}-linux.tar.xz" -C "${pkgdir}/opt/${pkgname}" --strip-components=0
 
     # Create symlink in /usr/bin
     install -dm755 "${pkgdir}/usr/bin"

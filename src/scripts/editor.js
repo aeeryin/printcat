@@ -63,7 +63,7 @@
   winClose.addEventListener("click", () => window.api.closeWindow());
   const editorTranslations = {
     en: {
-      "app-title": "Feathershot",
+      "app-title": "Printcat",
       "btn-undo": "Undo (Ctrl+Z)",
       "btn-redo": "Redo (Ctrl+Y)",
       "btn-rotate-ccw": "Rotate Counterclockwise",
@@ -113,7 +113,7 @@
       "notify-pdf-failed": "Failed to save PDF"
     },
     pt: {
-      "app-title": "Feathershot",
+      "app-title": "Printcat",
       "btn-undo": "Desfazer (Ctrl+Z)",
       "btn-redo": "Refazer (Ctrl+Y)",
       "btn-rotate-ccw": "Girar no Sentido Anti-hor\xE1rio",
@@ -1683,7 +1683,7 @@
       tempCanvas.height = sourceCanvas.height;
       const tempCtx = tempCanvas.getContext("2d");
       tempCtx.drawImage(sourceCanvas, 0, 0);
-      const wmText = settingsData.watermarkText || "Feathershot";
+      const wmText = settingsData.watermarkText || "Printcat";
       const opacity = settingsData.watermarkOpacity || 0.3;
       const position = settingsData.watermarkPosition || "bottom-right";
       const logoOnly = settingsData.watermarkLogoOnly || false;
