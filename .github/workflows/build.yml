@@ -210,9 +210,9 @@ jobs:
           echo "Built package: ${FINAL_PKG}"
           ls -la "${FINAL_PKG}"
 
-          # Move to dist
-          mkdir -p dist
-          mv "${FINAL_PKG}" dist/
+          # Move to root dist directory
+          mkdir -p "$GITHUB_WORKSPACE/dist"
+          mv "${FINAL_PKG}" "$GITHUB_WORKSPACE/dist/"
 
       - uses: actions/upload-artifact@v4
         with:
