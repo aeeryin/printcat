@@ -1,4 +1,8 @@
-# Printcat
+<p align="center">
+  <img src="src/assets/images/logoWithText.png" alt="Printcat Logo" width="380">
+</p>
+
+> 📢 **Note**: **Feathershot** is now officially **Printcat**! 🐱✨
 
 Printcat is a premium, feature-rich screenshot tool for Windows, macOS, and Linux, inspired by Greenshot and built with Electron.
 
