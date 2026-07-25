@@ -151,12 +151,8 @@ if (gotTheLock) {
 
 // App Icon Path
 const APP_ICON_PATH = path.join(__dirname, 'src', 'assets', 'icons', 'main.png');
-const APP_ICON_HYPR_PATH = path.join(__dirname, 'src', 'assets', 'icons', 'main-hyprland.png');
-const APP_ICON_MACOS_PATH = path.join(__dirname, 'src', 'assets', 'icons', 'main-macos.png');
 
 function getAppIcon() {
-  if (settings.theme === 'linux') return APP_ICON_HYPR_PATH;
-  if (settings.theme === 'macos') return APP_ICON_MACOS_PATH;
   return APP_ICON_PATH;
 }
 

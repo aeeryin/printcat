@@ -20,7 +20,7 @@
   <div id="titlebar">
     <div class="title-left">
       <img src="../assets/images/logoNoText.png" class="logo-icon" alt="Printcat">
-      <span class="app-title" id="app-title">Printcat Settings</span>
+      <span class="app-title" id="app-title">print("cat")</span>
     </div>
     <div class="window-controls">
       <button id="win-close" class="win-btn close" title="Close">
@@ -40,22 +40,27 @@
 
       <nav class="sidebar-nav">
         <button class="nav-item active" data-tab="tab-general">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="3"></circle>
-            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            <path
+              d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
+            </path>
           </svg>
           <span id="tab-label-general">General</span>
         </button>
 
         <button class="nav-item" data-tab="tab-capture">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
             <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
           </svg>
           <span id="tab-label-capture">Capture & Storage</span>
         </button>
 
         <button class="nav-item" data-tab="tab-hotkeys">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
             <rect x="2" y="4" width="20" height="16" rx="2" ry="2"></rect>
             <line x1="6" y1="8" x2="6" y2="8"></line>
             <line x1="10" y1="8" x2="10" y2="8"></line>
@@ -67,7 +72,8 @@
         </button>
 
         <button class="nav-item" data-tab="tab-appearance">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="10"></circle>
             <path d="M12 2a7 7 0 1 0 10 10"></path>
           </svg>
@@ -75,14 +81,18 @@
         </button>
 
         <button class="nav-item" data-tab="tab-watermark">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <polygon
+              points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2">
+            </polygon>
           </svg>
           <span id="tab-label-watermark">Watermark</span>
         </button>
 
         <button class="nav-item" data-tab="tab-others">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
             <line x1="4" y1="21" x2="4" y2="14"></line>
             <line x1="4" y1="10" x2="4" y2="3"></line>
             <line x1="12" y1="21" x2="12" y2="12"></line>
@@ -109,7 +119,8 @@
       <div id="settings-header">
         <div class="header-text">
           <div class="header-title">Customize your screenshot workflow.</div>
-          <div class="header-subtitle" id="settings-subtitle">Fast capture, smarter saving, and easy hotkey control.</div>
+          <div class="header-subtitle" id="settings-subtitle">Fast capture, smarter saving, and easy hotkey control.
+          </div>
         </div>
         <div class="header-badge">v<span id="app-version">1.0.0</span></div>
       </div>
@@ -145,7 +156,8 @@
         <div class="tab-pane active" id="tab-general">
           <div class="setting-card">
             <div class="card-title" id="card-default-action-title">Default Action</div>
-            <div class="card-desc" id="card-default-action-desc">Choose what happens right after you select and crop a screen area.</div>
+            <div class="card-desc" id="card-default-action-desc">Choose what happens right after you select and crop a
+              screen area.</div>
             <div class="radio-group">
               <label class="radio-label">
                 <input type="radio" name="default-action" value="editor" checked>
@@ -194,12 +206,14 @@
 
           <div class="setting-card">
             <div class="card-title" id="card-startup-title">Startup</div>
-            <div class="card-desc" id="card-startup-desc">Control whether the application launches automatically when you sign in.</div>
+            <div class="card-desc" id="card-startup-desc">Control whether the application launches automatically when
+              you sign in.</div>
             <div class="toggle-row">
               <label class="toggle-label" for="toggle-startup">
                 <div class="toggle-text">
                   <strong id="toggle-startup-title">Start with system</strong>
-                  <span id="toggle-startup-desc">Printcat will run in the system tray automatically when you sign in.</span>
+                  <span id="toggle-startup-desc">Printcat will run in the system tray automatically when you sign
+                    in.</span>
                 </div>
                 <div class="toggle-switch">
                   <input type="checkbox" id="toggle-startup">
@@ -214,7 +228,8 @@
         <div class="tab-pane" id="tab-capture">
           <div class="setting-card">
             <div class="card-title" id="card-storage-title">Storage & Naming</div>
-            <div class="card-desc" id="card-storage-desc">Setup where screenshots are saved and how files are named.</div>
+            <div class="card-desc" id="card-storage-desc">Setup where screenshots are saved and how files are named.
+            </div>
 
             <div class="setting-field">
               <label class="field-label" id="label-save-folder">Save Folder Path</label>
@@ -228,7 +243,8 @@
               <div class="setting-field" style="flex: 2;">
                 <label class="field-label" id="label-naming-template">File Naming Template</label>
                 <input type="text" id="filename-pattern" placeholder="Screenshot_{yyyy}-{month}-{day}">
-                <span class="input-hint" id="naming-hint">Supported tokens: {yyyy}, {month}, {day}, {hour}, {min}, {sec}</span>
+                <span class="input-hint" id="naming-hint">Supported tokens: {yyyy}, {month}, {day}, {hour}, {min},
+                  {sec}</span>
               </div>
               <div class="setting-field" style="flex: 1;">
                 <label class="field-label" id="label-format">Format</label>
@@ -249,7 +265,8 @@
               <label class="toggle-label" for="toggle-ruler">
                 <div class="toggle-text">
                   <strong id="toggle-ruler-title">Show Pixel Ruler on Crop</strong>
-                  <span id="toggle-ruler-desc">Display pixel measurement ticks and coordinates on the selection box during cropping.</span>
+                  <span id="toggle-ruler-desc">Display pixel measurement ticks and coordinates on the selection box
+                    during cropping.</span>
                 </div>
                 <div class="toggle-switch">
                   <input type="checkbox" id="toggle-ruler" checked>
@@ -278,7 +295,8 @@
                 PrtSc
               </button>
             </div>
-            <span class="input-hint" id="hotkey-hint">Click "Change Hotkey" to record a combo, or use the PrtSc button to set Print Screen directly.</span>
+            <span class="input-hint" id="hotkey-hint">Click "Change Hotkey" to record a combo, or use the PrtSc button
+              to set Print Screen directly.</span>
             <div id="hotkey-warning" class="hotkey-warning" style="display:none;"></div>
           </div>
         </div>
@@ -398,7 +416,8 @@
               <label class="toggle-label" for="toggle-maximized">
                 <div class="toggle-text">
                   <strong id="toggle-maximized-title">Always open editor maximized</strong>
-                  <span id="toggle-maximized-desc">The editor window will always open in fullscreen mode, regardless of the image size.</span>
+                  <span id="toggle-maximized-desc">The editor window will always open in fullscreen mode, regardless of
+                    the image size.</span>
                 </div>
                 <div class="toggle-switch">
                   <input type="checkbox" id="toggle-maximized">

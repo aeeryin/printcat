@@ -90,7 +90,7 @@
       "menu-clipboard": "Copy to Clipboard",
       "menu-desktop": "Save to Desktop",
       "menu-print": "Print",
-      "hint-overlay": "Drag to crop | Esc to cancel"
+      "hint-overlay": "Drag to crop | Ctrl+C to copy | Esc to cancel"
     },
     pt: {
       "capture-label": "Capturar",
@@ -98,7 +98,7 @@
       "menu-clipboard": "Copiar para a Área de Transferência",
       "menu-desktop": "Salvar na Área de Trabalho",
       "menu-print": "Imprimir",
-      "hint-overlay": "Arraste para cortar | Esc para cancelar"
+      "hint-overlay": "Arraste para cortar | Ctrl+C para copiar | Esc para cancelar"
     }
   };
 
@@ -481,6 +481,21 @@
   window.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
       window.api.cancelCrop();
+    } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "c") {
+      e.preventDefault();
+      if (!croppedRect) {
+        const rect = getGlobalSelectionRect();
+        if (rect && rect.w > 5 && rect.h > 5) {
+          croppedRect = rect;
+          isFrozen = true;
+        } else if (compositeCanvas) {
+          croppedRect = { x: 0, y: 0, w: compositeCanvas.width, h: compositeCanvas.height };
+          isFrozen = true;
+        }
+      }
+      if (croppedRect) {
+        executeCaptureAction("clipboard");
+      }
     } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") {
       undo();
     } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "y") {

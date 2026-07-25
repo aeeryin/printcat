@@ -27,7 +27,7 @@
   let pendingUpdateVersion = null;
   const settingsTranslations = {
     en: {
-      "app-title": "Printcat Settings",
+      "app-title": "print("cat")",
       "card-default-action-title": "Default Action",
       "card-default-action-desc": "Choose what happens right after you select and crop a screen area.",
       "action-editor-title": "Open in Editor",
@@ -177,13 +177,7 @@
     document.documentElement.setAttribute("data-theme", effectiveTheme);
     const logoIcons = document.querySelectorAll(".logo-icon");
     logoIcons.forEach((logo) => {
-      if (effectiveTheme === "linux") {
-        logo.src = "../assets/icons/main-hyprland.png";
-      } else if (effectiveTheme === "macos") {
-        logo.src = "../assets/icons/main-macos.png";
-      } else {
-        logo.src = "../assets/icons/main.png";
-      }
+      logo.src = "../assets/icons/main.png";
     });
     if (themePreviews) {
       const btns = themePreviews.querySelectorAll(".theme-btn");
