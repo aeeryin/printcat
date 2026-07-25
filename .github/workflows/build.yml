@@ -239,8 +239,8 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v1.3.1' }}
-          name: "Printcat ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v1.3.1' }}"
+          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v1.3.2' }}
+          name: "Printcat ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v1.3.2' }}"
           draft: false
           prerelease: false
           generate_release_notes: true

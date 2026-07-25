@@ -27,7 +27,7 @@
   let pendingUpdateVersion = null;
   const settingsTranslations = {
     en: {
-      "app-title": "print("cat")",
+      "app-title": 'print("cat")',
       "card-default-action-title": "Default Action",
       "card-default-action-desc": "Choose what happens right after you select and crop a screen area.",
       "action-editor-title": "Open in Editor",
@@ -324,28 +324,34 @@
     updateHotkeyWarning();
   });
   btnSave.addEventListener("click", async () => {
-    const selectedAction = document.querySelector('input[name="default-action"]:checked').value;
-    let shortcutValue = hotkeyInput.value;
-    if (isRecordingHotkey || shortcutValue === "Press key combo..." || shortcutValue === "Pressione as teclas...") {
-      shortcutValue = currentSettings.shortcut || "CommandOrControl+Shift+S";
-      isRecordingHotkey = false;
-      recordBtn.textContent = "Change Hotkey";
-      hotkeyInput.classList.remove("recording");
+    try {
+      const checkedRadio = document.querySelector('input[name="default-action"]:checked');
+      const selectedAction = checkedRadio ? checkedRadio.value : (currentSettings.defaultAction || "editor");
+      let shortcutValue = hotkeyInput ? hotkeyInput.value : (currentSettings.shortcut || "CommandOrControl+Shift+S");
+      if (isRecordingHotkey || shortcutValue === "Press key combo..." || shortcutValue === "Pressione as teclas...") {
+        shortcutValue = currentSettings.shortcut || "CommandOrControl+Shift+S";
+        isRecordingHotkey = false;
+        if (recordBtn) recordBtn.textContent = "Change Hotkey";
+        if (hotkeyInput) hotkeyInput.classList.remove("recording");
+      }
+      const newSettings = {
+        shortcut: shortcutValue,
+        defaultAction: selectedAction,
+        saveFolder: folderInput ? folderInput.value : "",
+        fileNamePattern: filenamePatternInput ? filenamePatternInput.value : "Screenshot_{yyyy}-{month}-{day}",
+        imageFormat: formatSelect ? formatSelect.value : "png",
+        alwaysMaximized: toggleMaximized ? toggleMaximized.checked : false,
+        startAtLogin: toggleStartup ? toggleStartup.checked : false,
+        windowsPrintScreenSnip: shortcutValue === "PrintScreen" ? false : togglePrintscreen ? togglePrintscreen.checked : true,
+        language: languageSelect ? languageSelect.value : "auto",
+        theme: themeSelect ? themeSelect.value : "dark"
+      };
+      await window.api.saveSettings(newSettings);
+    } catch (err) {
+      console.error("Failed to save settings:", err);
+    } finally {
+      window.api.closeWindow();
     }
-    const newSettings = {
-      shortcut: shortcutValue,
-      defaultAction: selectedAction,
-      saveFolder: folderInput.value,
-      fileNamePattern: filenamePatternInput.value,
-      imageFormat: formatSelect.value,
-      alwaysMaximized: toggleMaximized.checked,
-      startAtLogin: toggleStartup.checked,
-      windowsPrintScreenSnip: shortcutValue === "PrintScreen" ? false : togglePrintscreen ? togglePrintscreen.checked : true,
-      language: languageSelect.value,
-      theme: themeSelect.value
-    };
-    await window.api.saveSettings(newSettings);
-    window.api.closeWindow();
   });
   themeSelect.addEventListener("change", () => {
     const theme = themeSelect.value;
