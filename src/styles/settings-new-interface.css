@@ -1117,8 +1117,8 @@ select {
 /* Powered by Fireflare Badge in Sidebar Bottom */
 .powered-by-badge {
   position: absolute;
-  bottom: 24px;
-  left: 24px;
+  bottom: 16px;
+  left: 16px;
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -1134,8 +1134,8 @@ select {
 }
 
 .powered-by-badge .powered-by-icon {
-  width: 14px;
-  height: 14px;
+  width: 24px;
+  height: 24px;
   object-fit: contain;
   background: transparent;
 }
