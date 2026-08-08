@@ -165,24 +165,24 @@ jobs:
             cp "printcat-pkg/opt/printcat/resources/app/src/assets/icons/main.png" "printcat-pkg/usr/share/pixmaps/printcat.png"
           fi
 
-          cat > "printcat-pkg/.PKGINFO" <<EOF
-pkgname = printcat
-pkgver = ${VERSION}-1
-pkgdesc = Premium, feature-rich cross-platform screenshot tool
-url = https://github.com/aeeryin/Printcat
-builddate = $(date +%s)
-packager = Aeeryin <artisticamente.official@gmail.com>
-size = $(du -sb printcat-pkg | cut -f1)
-arch = x86_64
-license = MIT
-depends = electron
-depends = libnotify
-depends = libxtst
-depends = nss
-depends = libxss
-depends = libappindicator-gtk3
-depends = libsecret
-EOF
+          {
+            echo "pkgname = printcat"
+            echo "pkgver = ${VERSION}-1"
+            echo "pkgdesc = Premium, feature-rich cross-platform screenshot tool"
+            echo "url = https://github.com/aeeryin/Printcat"
+            echo "builddate = $(date +%s)"
+            echo "packager = Aeeryin <artisticamente.official@gmail.com>"
+            echo "size = $(du -sb printcat-pkg | cut -f1)"
+            echo "arch = x86_64"
+            echo "license = MIT"
+            echo "depends = electron"
+            echo "depends = libnotify"
+            echo "depends = libxtst"
+            echo "depends = nss"
+            echo "depends = libxss"
+            echo "depends = libappindicator-gtk3"
+            echo "depends = libsecret"
+          } > "printcat-pkg/.PKGINFO"
 
           cd printcat-pkg
           tar cf "../${PKGNAME}" .PKGINFO opt usr
@@ -247,6 +247,7 @@ EOF
           draft: false
           prerelease: false
           generate_release_notes: true
+          make_latest: "true"
           files: |
             artifacts/*.exe
             artifacts/*.dmg
