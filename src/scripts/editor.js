@@ -9,6 +9,9 @@
   const btnSave = document.getElementById("btn-save");
   const btnRotateCw = document.getElementById("btn-rotate-cw");
   const btnRotateCcw = document.getElementById("btn-rotate-ccw");
+  const btnFlipH = document.getElementById("btn-flip-h");
+  const btnFlipV = document.getElementById("btn-flip-v");
+  const btnInvertColor = document.getElementById("btn-invert-color");
   const winMin = document.getElementById("win-min");
   const winMax = document.getElementById("win-max");
   const winClose = document.getElementById("win-close");
@@ -68,6 +71,9 @@
       "btn-redo": "Redo (Ctrl+Y)",
       "btn-rotate-ccw": "Rotate Counterclockwise",
       "btn-rotate-cw": "Rotate Clockwise",
+      "btn-flip-h": "Flip Horizontally (Back to Front / Mirror)",
+      "btn-flip-v": "Flip Vertically (Upside Down)",
+      "btn-invert-color": "Invert Image Colors",
       "btn-copy": "Copy to Clipboard (Ctrl+C)",
       "btn-save": "Save to File (Ctrl+S)",
       "btn-copy-text": "Copy",
@@ -118,6 +124,9 @@
       "btn-redo": "Refazer (Ctrl+Y)",
       "btn-rotate-ccw": "Girar no Sentido Anti-hor\xE1rio",
       "btn-rotate-cw": "Girar no Sentido Hor\xE1rio",
+      "btn-flip-h": "Inverter Horizontalmente (Espelhar / De tr\xE1s pra frente)",
+      "btn-flip-v": "Inverter Verticalmente (De cabe\xE7a pra baixo / Ponta-cabe\xE7a)",
+      "btn-invert-color": "Inverter Cores da Imagem",
       "btn-copy": "Copiar para a \xC1rea de Transfer\xEAncia (Ctrl+C)",
       "btn-save": "Salvar no Arquivo (Ctrl+S)",
       "btn-copy-text": "Copiar",
@@ -176,6 +185,12 @@
     if (btnRotateCcw2) btnRotateCcw2.title = t["btn-rotate-ccw"];
     const btnRotateCw2 = document.getElementById("btn-rotate-cw");
     if (btnRotateCw2) btnRotateCw2.title = t["btn-rotate-cw"];
+    const btnFlipH2 = document.getElementById("btn-flip-h");
+    if (btnFlipH2) btnFlipH2.title = t["btn-flip-h"];
+    const btnFlipV2 = document.getElementById("btn-flip-v");
+    if (btnFlipV2) btnFlipV2.title = t["btn-flip-v"];
+    const btnInvertColor2 = document.getElementById("btn-invert-color");
+    if (btnInvertColor2) btnInvertColor2.title = t["btn-invert-color"];
     const btnCopy2 = document.getElementById("btn-copy");
     if (btnCopy2) btnCopy2.title = t["btn-copy"];
     const btnSave2 = document.getElementById("btn-save");
@@ -1423,9 +1438,14 @@
     };
     document.getElementById("tool-select").click();
   }
-  btnRotateCw.addEventListener("click", () => rotateImage(90));
-  btnRotateCcw.addEventListener("click", () => rotateImage(-90));
+  if (btnRotateCw) btnRotateCw.addEventListener("click", () => rotateImage(90));
+  if (btnRotateCcw) btnRotateCcw.addEventListener("click", () => rotateImage(-90));
+  if (btnFlipH) btnFlipH.addEventListener("click", flipHorizontal);
+  if (btnFlipV) btnFlipV.addEventListener("click", flipVertical);
+  if (btnInvertColor) btnInvertColor.addEventListener("click", invertColors);
+
   function rotateImage(angleDegrees) {
+    if (!backgroundImage.src) return showActionNotification(t("notify-no-image"));
     saveState();
     const oldW = canvas.width;
     const oldH = canvas.height;
@@ -1451,6 +1471,104 @@
       canvas.height = newH;
       resizeCanvasWrapper();
       statusDims.textContent = `${newW} \xD7 ${newH} px`;
+      objects = [];
+      selectedObject = null;
+      draw();
+    };
+  }
+
+  function flipHorizontal() {
+    if (!backgroundImage.src) return showActionNotification(t("notify-no-image"));
+    saveState();
+    const w = canvas.width;
+    const h = canvas.height;
+    const tempCanvas = document.createElement("canvas");
+    tempCanvas.width = w;
+    tempCanvas.height = h;
+    const tempCtx = tempCanvas.getContext("2d");
+    const bakeCanvas = document.createElement("canvas");
+    bakeCanvas.width = w;
+    bakeCanvas.height = h;
+    const bakeCtx = bakeCanvas.getContext("2d");
+    bakeCtx.drawImage(backgroundImage, 0, 0);
+    objects.forEach((obj) => drawObject(bakeCtx, obj));
+    tempCtx.translate(w, 0);
+    tempCtx.scale(-1, 1);
+    tempCtx.drawImage(bakeCanvas, 0, 0);
+    backgroundImage = new Image();
+    backgroundImage.src = tempCanvas.toDataURL();
+    backgroundImage.onload = () => {
+      canvas.width = w;
+      canvas.height = h;
+      resizeCanvasWrapper();
+      statusDims.textContent = `${w} \xD7 ${h} px`;
+      objects = [];
+      selectedObject = null;
+      draw();
+    };
+  }
+
+  function flipVertical() {
+    if (!backgroundImage.src) return showActionNotification(t("notify-no-image"));
+    saveState();
+    const w = canvas.width;
+    const h = canvas.height;
+    const tempCanvas = document.createElement("canvas");
+    tempCanvas.width = w;
+    tempCanvas.height = h;
+    const tempCtx = tempCanvas.getContext("2d");
+    const bakeCanvas = document.createElement("canvas");
+    bakeCanvas.width = w;
+    bakeCanvas.height = h;
+    const bakeCtx = bakeCanvas.getContext("2d");
+    bakeCtx.drawImage(backgroundImage, 0, 0);
+    objects.forEach((obj) => drawObject(bakeCtx, obj));
+    tempCtx.translate(0, h);
+    tempCtx.scale(1, -1);
+    tempCtx.drawImage(bakeCanvas, 0, 0);
+    backgroundImage = new Image();
+    backgroundImage.src = tempCanvas.toDataURL();
+    backgroundImage.onload = () => {
+      canvas.width = w;
+      canvas.height = h;
+      resizeCanvasWrapper();
+      statusDims.textContent = `${w} \xD7 ${h} px`;
+      objects = [];
+      selectedObject = null;
+      draw();
+    };
+  }
+
+  function invertColors() {
+    if (!backgroundImage.src) return showActionNotification(t("notify-no-image"));
+    saveState();
+    const w = canvas.width;
+    const h = canvas.height;
+    const tempCanvas = document.createElement("canvas");
+    tempCanvas.width = w;
+    tempCanvas.height = h;
+    const tempCtx = tempCanvas.getContext("2d");
+    const bakeCanvas = document.createElement("canvas");
+    bakeCanvas.width = w;
+    bakeCanvas.height = h;
+    const bakeCtx = bakeCanvas.getContext("2d");
+    bakeCtx.drawImage(backgroundImage, 0, 0);
+    objects.forEach((obj) => drawObject(bakeCtx, obj));
+    const imgData = bakeCtx.getImageData(0, 0, w, h);
+    const data = imgData.data;
+    for (let i = 0; i < data.length; i += 4) {
+      data[i] = 255 - data[i];
+      data[i + 1] = 255 - data[i + 1];
+      data[i + 2] = 255 - data[i + 2];
+    }
+    tempCtx.putImageData(imgData, 0, 0);
+    backgroundImage = new Image();
+    backgroundImage.src = tempCanvas.toDataURL();
+    backgroundImage.onload = () => {
+      canvas.width = w;
+      canvas.height = h;
+      resizeCanvasWrapper();
+      statusDims.textContent = `${w} \xD7 ${h} px`;
       objects = [];
       selectedObject = null;
       draw();

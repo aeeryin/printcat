@@ -1,6 +1,6 @@
 {
   "name": "printcat",
-  "version": "1.3.2",
+  "version": "1.3.3",
   "description": "Premium, feature-rich cross-platform screenshot tool",
   "main": "main.js",
   "scripts": {
