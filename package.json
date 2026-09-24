@@ -1,6 +1,6 @@
 {
   "name": "printcat",
-  "version": "1.3.3",
+  "version": "1.3.4",
   "description": "Premium, feature-rich cross-platform screenshot tool",
   "main": "main.js",
   "scripts": {
@@ -15,7 +15,8 @@
     "publish": "electron-builder --publish always",
     "publish:win": "electron-builder --win --publish always",
     "publish:mac": "electron-builder --mac --publish always",
-    "publish:linux": "electron-builder --linux --publish always"
+    "publish:linux": "electron-builder --linux --publish always",
+    "test": "node tests/cropper-damage.cjs && node tests/cropper-performance.cjs"
   },
   "keywords": [
     "screenshot",
@@ -135,7 +136,8 @@
       "!.github/**",
       "!.git/**",
       "!website/**",
-      "!*.log"
+      "!*.log",
+      "!tests/**"
     ],
     "directories": {
       "output": "dist"

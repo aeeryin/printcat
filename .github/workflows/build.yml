@@ -27,6 +27,8 @@ jobs:
 
       - run: npm ci
 
+      - run: npm test
+
       - name: Build Windows
         run: npm run build:win
         env:
@@ -53,6 +55,8 @@ jobs:
           cache: 'npm'
 
       - run: npm ci
+
+      - run: npm test
 
       - name: Build macOS
         run: npm run build:mac
@@ -81,6 +85,8 @@ jobs:
           cache: 'npm'
 
       - run: npm ci
+
+      - run: npm test
 
       - name: Install system dependencies
         run: |
@@ -246,6 +252,7 @@ jobs:
           name: "Printcat ${{ steps.get_version.outputs.TAG_NAME }}"
           draft: false
           prerelease: false
+          body_path: RELEASE_NOTES.md
           generate_release_notes: true
           make_latest: "true"
           files: |

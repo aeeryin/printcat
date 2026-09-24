@@ -1,6 +1,18 @@
 (() => {
   const canvas = document.getElementById("view-canvas");
   const ctx = canvas.getContext("2d");
+  // Keep the screenshot static; only the transparent selection layer changes.
+  const background = document.createElement("canvas");
+  background.style.cssText = "position:absolute;inset:0;width:100%;height:100%;pointer-events:none";
+  canvas.before(background);
+  const backgroundCtx = background.getContext("2d", { alpha: false });
+  const sampleCanvas = document.createElement("canvas");
+  sampleCanvas.width = sampleCanvas.height = 1;
+  const sampleCtx = sampleCanvas.getContext("2d", { willReadFrequently: true });
+  let drawPending = false;
+  let magnifierPending = false;
+  let pendingMove = null;
+  let previousFrame = null;
   const magnifier = document.getElementById("magnifier");
   const magCanvas = document.getElementById("mag-canvas");
   const magCtx = magCanvas.getContext("2d");
@@ -173,12 +185,17 @@
   });
 
   function resizeCanvas() {
+    previousFrame = null;
     dpr = window.devicePixelRatio || 1;
     const width = window.innerWidth;
     const height = window.innerHeight;
     canvas.width = width * dpr;
     canvas.height = height * dpr;
     ctx.scale(dpr, dpr);
+    background.width = width;
+    background.height = height;
+    backgroundCtx.drawImage(compositeCanvas, displayOffset.x, displayOffset.y,
+      width, height, 0, 0, width, height);
   }
 
   window.addEventListener("resize", () => {
@@ -379,7 +396,6 @@
       globalCurrentY = bottom;
       croppedRect = getGlobalSelectionRect();
       draw();
-      updateToolbarPosition();
       return;
     }
 
@@ -393,7 +409,6 @@
       moveStart = g;
       croppedRect = getGlobalSelectionRect();
       draw();
-      updateToolbarPosition();
       return;
     }
 
@@ -417,7 +432,7 @@
       globalCurrentY = g.y;
       if (compositeReady) {
         if (isDragging) {
-          window.api.sendCropperEvent({ type: "move", cx: g.x, cy: g.y });
+          pendingMove = { type: "move", cx: g.x, cy: g.y };
         }
         draw();
         updateMagnifier(e.clientX, e.clientY);
@@ -459,6 +474,7 @@
     if (!isDragging) return;
 
     isDragging = false;
+    pendingMove = null;
     const g = toGlobal(e.clientX, e.clientY);
     globalCurrentX = g.x;
     globalCurrentY = g.y;
@@ -472,6 +488,7 @@
       magnifier.style.display = "none";
       window.api.sendCropperEvent({ type: "end", frozen: true, rect });
       showToolbar();
+      draw();
     } else {
       window.api.sendCropperEvent({ type: "end", frozen: false });
       draw();
@@ -866,26 +883,43 @@
   }
 
   function draw() {
+    if (drawPending) return;
+    drawPending = true;
+    requestAnimationFrame(() => {
+      drawPending = false;
+      if (pendingMove) {
+        window.api.sendCropperEvent(pendingMove);
+        pendingMove = null;
+      }
+      renderFrame();
+      if (isFrozen && croppedRect) updateToolbarPosition();
+    });
+  }
+
+  function renderFrame() {
     if (!compositeReady) return;
     const w = window.innerWidth;
     const h = window.innerHeight;
-    ctx.clearRect(0, 0, w, h);
-
-    // Always draw full clear base screenshot
-    ctx.drawImage(
-      compositeCanvas,
-      displayOffset.x,
-      displayOffset.y,
-      w,
-      h,
-      0,
-      0,
-      w,
-      h
-    );
+    const selection = (isDragging || isFrozen) ? getGlobalSelectionRect() : null;
+    const frame = {
+      rect: selection ? { x: selection.x - displayOffset.x, y: selection.y - displayOffset.y, w: selection.w, h: selection.h } : null,
+      cursor: mouseOnScreen && !isFrozen && !isFadingOut ? { x: localMouseX, y: localMouseY } : null,
+      opacity: cropperFadeOpacity,
+      annotated: historyStack.length > 0 || isBoxSelecting
+    };
+    const damage = window.cropperDamage(previousFrame, frame, w, h);
+    previousFrame = frame;
+    if (!damage.length) return;
+    ctx.save();
+    ctx.beginPath();
+    damage.forEach(r => ctx.rect(r.x, r.y, r.w, r.h));
+    ctx.clip();
 
     // Dim background overlay
     ctx.fillStyle = `rgba(0, 0, 0, ${0.45 * cropperFadeOpacity})`;
+    // Clear all regions before filling: overlapping dirty strips must not
+    // accumulate alpha and leave darker bands behind the moving selection.
+    damage.forEach(r => ctx.clearRect(r.x, r.y, r.w, r.h));
     ctx.fillRect(0, 0, w, h);
 
     // Magnifier when starting selection
@@ -948,17 +982,7 @@
         ctx.save();
         ctx.globalAlpha = cropperFadeOpacity;
 
-        ctx.drawImage(
-          compositeCanvas,
-          visLeft + displayOffset.x,
-          visTop + displayOffset.y,
-          visRight - visLeft,
-          visBottom - visTop,
-          visLeft,
-          visTop,
-          visRight - visLeft,
-          visBottom - visTop
-        );
+        ctx.clearRect(visLeft, visTop, visRight - visLeft, visBottom - visTop);
 
         renderAnnotations(ctx);
 
@@ -977,7 +1001,7 @@
           ctx.lineWidth = 1;
           const rw = globalRect.w;
           const rh = globalRect.h;
-          for (let step = 0; step <= rw; step += 10) {
+          for (let step = Math.max(0, Math.ceil(-localX / 10) * 10); step <= Math.min(rw, w - localX); step += 10) {
             const tx = localX + step;
             const th = step % 50 === 0 ? 6 : 3;
             ctx.beginPath();
@@ -988,7 +1012,7 @@
               ctx.fillText(`${step}`, tx - 6, localY + 14);
             }
           }
-          for (let step = 0; step <= rh; step += 10) {
+          for (let step = Math.max(0, Math.ceil(-localY / 10) * 10); step <= Math.min(rh, h - localY); step += 10) {
             const ty = localY + step;
             const tw = step % 50 === 0 ? 6 : 3;
             ctx.beginPath();
@@ -1077,10 +1101,22 @@
         ctx.restore();
       }
     }
+    ctx.restore();
   }
 
   function updateMagnifier(mouseX, mouseY) {
-    if (!compositeReady || isFadingOut) return;
+    localMouseX = mouseX;
+    localMouseY = mouseY;
+    if (magnifierPending) return;
+    magnifierPending = true;
+    requestAnimationFrame(() => {
+      magnifierPending = false;
+      renderMagnifier(localMouseX, localMouseY);
+    });
+  }
+
+  function renderMagnifier(mouseX, mouseY) {
+    if (!compositeReady || isFadingOut || isFrozen || !mouseOnScreen) return;
     magCtx.clearRect(0, 0, MAG_SIZE, MAG_SIZE);
     const gx = mouseX + displayOffset.x;
     const gy = mouseY + displayOffset.y;
@@ -1133,8 +1169,9 @@
 
     let colorText = "";
     try {
-      const compCtx = compositeCanvas.getContext("2d");
-      const pxData = compCtx.getImageData(Math.floor(gx), Math.floor(gy), 1, 1).data;
+      sampleCtx.clearRect(0, 0, 1, 1);
+      sampleCtx.drawImage(compositeCanvas, Math.floor(gx), Math.floor(gy), 1, 1, 0, 0, 1, 1);
+      const pxData = sampleCtx.getImageData(0, 0, 1, 1).data;
       const hex = "#" + [pxData[0], pxData[1], pxData[2]].map(v => v.toString(16).padStart(2, "0")).join("").toUpperCase();
       colorText = ` | ${hex}`;
     } catch (_) {}

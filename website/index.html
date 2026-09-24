@@ -309,9 +309,9 @@
 
     // Release download URLs
     let urls = {
-      windows: `https://github.com/${repoOwner}/${repoName}/releases/latest/download/Printcat-1.2.3-windows.exe`,
-      mac: `https://github.com/${repoOwner}/${repoName}/releases/latest/download/Printcat-1.2.3-macos.dmg`,
-      linux: `https://github.com/${repoOwner}/${repoName}/releases/latest/download/Printcat-1.2.3-linux.AppImage`
+      windows: `https://github.com/${repoOwner}/${repoName}/releases/latest`,
+      mac: `https://github.com/${repoOwner}/${repoName}/releases/latest`,
+      linux: `https://github.com/${repoOwner}/${repoName}/releases/latest`
     };
 
     // Detect browser's operating system
@@ -334,6 +334,8 @@
 
       if (btnText) btnText.textContent = `Download for ${osLabel}`;
       if (primaryBtn) primaryBtn.href = urls[os];
+      const secondaryBtn = document.getElementById("secondary-download-btn");
+      if (secondaryBtn) secondaryBtn.href = urls[os];
 
       // Update active state in alt links
       document.getElementById('alt-download-win').classList.toggle('active', os === 'windows');
@@ -342,55 +344,20 @@
     }
     async function fetchLatestRelease() {
       try {
-        const response = await fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/releases`);
-        if (response.ok) {
-          const releases = await response.json();
-          
-          let foundWin = false;
-          let foundMac = false;
-          let foundLinux = false;
-
-          for (const release of releases) {
-            const tag = release.tag_name;
-            const match = tag.match(/^v?([0-9.]+)-(windows|macos|linux)$/i);
-            if (!match) continue;
-
-            const version = match[1];
-            const platform = match[2].toLowerCase();
-
-            if (platform === 'windows' && !foundWin) {
-              const winAsset = release.assets.find(asset => asset.name.endsWith('.exe'));
-              if (winAsset) {
-                urls.windows = winAsset.browser_download_url;
-                foundWin = true;
-              }
-            } else if (platform === 'macos' && !foundMac) {
-              const macAsset = release.assets.find(asset => asset.name.endsWith('.dmg') || asset.name.endsWith('.zip'));
-              if (macAsset) {
-                urls.mac = macAsset.browser_download_url;
-                foundMac = true;
-              }
-            } else if (platform === 'linux' && !foundLinux) {
-              const linuxAsset = release.assets.find(asset => asset.name.endsWith('.AppImage') || asset.name.endsWith('.deb'));
-              if (linuxAsset) {
-                urls.linux = linuxAsset.browser_download_url;
-                foundLinux = true;
-              }
-            }
-
-            if (foundWin && foundMac && foundLinux) {
-              break;
-            }
-          }
-
-          if (releases.length > 0) {
-            const latestTag = releases[0].tag_name;
-            const match = latestTag.match(/^v?([0-9.]+)/);
-            if (match && versionBadge) {
-              versionBadge.textContent = 'v' + match[1];
-            }
-          }
+        const response = await fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/releases/latest`);
+        if (!response.ok) throw new Error('Release lookup failed');
+        const release = await response.json();
+        const assets = release.assets || [];
+        const findAsset = extensions => extensions.map(ext => assets.find(asset => asset.name.endsWith(ext))).find(Boolean);
+        const platformAssets = {
+          windows: findAsset(['.exe']),
+          mac: findAsset(['.dmg', '.zip']),
+          linux: findAsset(['.AppImage', '.deb'])
+        };
+        for (const [platform, asset] of Object.entries(platformAssets)) {
+          urls[platform] = asset ? asset.browser_download_url : release.html_url;
         }
+        if (versionBadge) versionBadge.textContent = release.tag_name;
       } catch (err) {
         console.error('Failed to query release details from GitHub API:', err);
       } finally {
