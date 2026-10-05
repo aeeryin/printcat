@@ -1,7 +1,6 @@
-## Printcat 1.3.6
+## Printcat 1.3.7
 
-- Substitui a janela compacta padrão do instalador Windows por um assistente personalizado com a identidade visual do Printcat.
-- Adiciona arte da marca à abertura, à conclusão e ao cabeçalho exibido durante a instalação.
-- Usa barra de progresso azul e textos do instalador em português ou inglês, conforme o idioma do sistema.
+- Substitui o assistente Windows por uma tela de instalação Printcat sem barra de título e sem a página final padrão.
+- Mostra a identidade visual do aplicativo, textos localizados e o progresso real da instalação em um único painel.
 
 Os instaladores e os arquivos de atualização automática estão disponíveis nos anexos desta release.
