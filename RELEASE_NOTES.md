@@ -1,8 +1,7 @@
-## Printcat 1.3.5
+## Printcat 1.3.6
 
-- Adiciona OCR diretamente ao menu do cropper: extraia o texto da área selecionada, veja o resultado e copie sem abrir o editor.
-- Corrige o repintado do pincel durante o desenho e reduz travamentos na seleção em monitores ultrawide.
-- Faz a opção “Abrir no Editor” respeitar a escolha do menu, independentemente da ação padrão configurada.
-- Mostra uma notificação própria quando há uma atualização disponível e ajusta o nome exibido nas notificações.
+- Substitui a janela compacta padrão do instalador Windows por um assistente personalizado com a identidade visual do Printcat.
+- Adiciona arte da marca à abertura, à conclusão e ao cabeçalho exibido durante a instalação.
+- Usa barra de progresso azul e textos do instalador em português ou inglês, conforme o idioma do sistema.
 
-Os instaladores e os arquivos de atualização automática serão anexados a esta release pelo GitHub Actions.
+Os instaladores e os arquivos de atualização automática estão disponíveis nos anexos desta release.

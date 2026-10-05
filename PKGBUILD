@@ -1,6 +1,6 @@
 # Maintainer: Aeeryin <artisticamente.official@gmail.com>
 pkgname=printcat
-pkgver=1.3.5
+pkgver=1.3.6
 pkgrel=1
 pkgdesc="Premium, feature-rich cross-platform screenshot tool"
 arch=('x86_64')
