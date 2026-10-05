@@ -37,9 +37,21 @@
         add(r.x + r.w / 2 - 150, r.y - 30, 300, 65);
       }
       if (state.cursor) {
-        add(0, state.cursor.y - 2, width, 4);
-        add(state.cursor.x - 2, 0, 4, height);
+        // The crosshair is rendered on a compositor layer by cropper.js.
+        // Repainting full-width and full-height canvas strips on every mouse
+        // move makes ultrawide selections expensive.
         add(state.cursor.x - 12, state.cursor.y - 12, 180, 40);
+      }
+      if (state.brushBounds) {
+        // A brush stroke can jump several pixels between pointer events. Dirty
+        // the complete accumulated path so no old segment is left behind while
+        // the canvas is being clipped to small repaint regions.
+        add(
+          state.brushBounds.x,
+          state.brushBounds.y,
+          state.brushBounds.w,
+          state.brushBounds.h
+        );
       }
     }
     return regions;

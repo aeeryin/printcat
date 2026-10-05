@@ -17,6 +17,8 @@
   const magCanvas = document.getElementById("mag-canvas");
   const magCtx = magCanvas.getContext("2d");
   const magText = document.getElementById("mag-text");
+  const crosshairX = document.getElementById("crosshair-x");
+  const crosshairY = document.getElementById("crosshair-y");
 
   // Floating Toolbar Elements
   const toolbar = document.getElementById("cropper-toolbar");
@@ -27,8 +29,15 @@
   // Menu items
   const btnEditor = document.getElementById("menu-editor");
   const btnClipboard = document.getElementById("menu-clipboard");
+  const btnOCR = document.getElementById("menu-ocr");
   const btnDesktop = document.getElementById("menu-desktop");
   const btnPrint = document.getElementById("menu-print");
+  const ocrOverlay = document.getElementById("cropper-ocr-overlay");
+  const ocrTitle = document.getElementById("cropper-ocr-title");
+  const ocrStatus = document.getElementById("cropper-ocr-status");
+  const ocrText = document.getElementById("cropper-ocr-text");
+  const ocrCopy = document.getElementById("cropper-ocr-copy");
+  const ocrClose = document.getElementById("cropper-ocr-close");
 
   // Tool buttons
   const btnShare = document.getElementById("tool-share");
@@ -86,6 +95,8 @@
   let historyStack = [];
   let redoStack = [];
   let currentStroke = null;
+  let cropperLanguage = "en";
+  let ocrRequestId = 0;
 
   function toGlobal(lx, ly) {
     return { x: lx + displayOffset.x, y: ly + displayOffset.y };
@@ -95,11 +106,44 @@
     return { x: gx - displayOffset.x, y: gy - displayOffset.y };
   }
 
+  function getStrokeBounds(points) {
+    if (!points || points.length === 0) return null;
+    let minX = Infinity;
+    let minY = Infinity;
+    let maxX = -Infinity;
+    let maxY = -Infinity;
+    for (const point of points) {
+      minX = Math.min(minX, point.x);
+      minY = Math.min(minY, point.y);
+      maxX = Math.max(maxX, point.x);
+      maxY = Math.max(maxY, point.y);
+    }
+    const padding = 14;
+    return {
+      x: minX - displayOffset.x - padding,
+      y: minY - displayOffset.y - padding,
+      w: Math.max(1, maxX - minX + padding * 2),
+      h: Math.max(1, maxY - minY + padding * 2)
+    };
+  }
+
+  function updateCrosshair(x, y, visible) {
+    if (!crosshairX || !crosshairY) return;
+    const display = visible ? "block" : "none";
+    crosshairX.style.display = display;
+    crosshairY.style.display = display;
+    if (visible) {
+      crosshairX.style.transform = `translate3d(0, ${Math.round(y)}px, 0)`;
+      crosshairY.style.transform = `translate3d(${Math.round(x)}px, 0, 0)`;
+    }
+  }
+
   const cropperTranslations = {
     en: {
       "capture-label": "Capture",
       "menu-editor": "Open in Editor",
       "menu-clipboard": "Copy to Clipboard",
+      "menu-ocr": "Extract Text (OCR)",
       "menu-desktop": "Save to Desktop",
       "menu-print": "Print",
       "hint-overlay": "Drag to crop | Ctrl+C to copy | Esc to cancel"
@@ -108,6 +152,7 @@
       "capture-label": "Capturar",
       "menu-editor": "Abrir no Editor",
       "menu-clipboard": "Copiar para a Área de Transferência",
+      "menu-ocr": "Extrair texto (OCR)",
       "menu-desktop": "Salvar na Área de Trabalho",
       "menu-print": "Imprimir",
       "hint-overlay": "Arraste para cortar | Ctrl+C para copiar | Esc para cancelar"
@@ -119,11 +164,13 @@
     if (captureLabel) captureLabel.textContent = t["capture-label"];
     const menuEditor = document.querySelector("#menu-editor span");
     const menuClipboard = document.querySelector("#menu-clipboard span");
+    const menuOCR = document.querySelector("#menu-ocr span");
     const menuDesktop = document.querySelector("#menu-desktop span");
     const menuPrint = document.querySelector("#menu-print span");
     const hintOverlay = document.querySelector("#hint-overlay span");
     if (menuEditor) menuEditor.textContent = t["menu-editor"];
     if (menuClipboard) menuClipboard.textContent = t["menu-clipboard"];
+    if (menuOCR) menuOCR.textContent = t["menu-ocr"];
     if (menuDesktop) menuDesktop.textContent = t["menu-desktop"];
     if (menuPrint) menuPrint.textContent = t["menu-print"];
     if (hintOverlay) hintOverlay.textContent = t["hint-overlay"];
@@ -133,7 +180,8 @@
   let showRuler = true;
 
   window.api.onCaptureImage((data, lang) => {
-    applyTranslations(lang || "en");
+    cropperLanguage = lang || "en";
+    applyTranslations(cropperLanguage);
     if (data.theme) {
       document.documentElement.setAttribute("data-theme", data.theme);
     }
@@ -286,6 +334,7 @@
   // Mouse Event Handlers
   window.addEventListener("mouseenter", () => {
     mouseOnScreen = true;
+    updateCrosshair(localMouseX, localMouseY, !isFrozen && !isFadingOut);
     draw();
   });
 
@@ -293,13 +342,14 @@
     mouseOnScreen = false;
     isMouseCurrentlyActiveHere = false;
     magnifier.style.display = "none";
+    updateCrosshair(0, 0, false);
     draw();
   });
 
   window.addEventListener("mousedown", (e) => {
     if (e.button !== 0 || isFadingOut) return;
 
-    if (toolbar.contains(e.target) || (colorPopover && colorPopover.contains(e.target)) || (dropdownMenu && dropdownMenu.contains(e.target))) {
+    if (toolbar.contains(e.target) || (colorPopover && colorPopover.contains(e.target)) || (dropdownMenu && dropdownMenu.contains(e.target)) || (ocrOverlay && ocrOverlay.contains(e.target))) {
       return;
     }
 
@@ -323,7 +373,7 @@
           currentStroke = {
             tool: "pen",
             color: currentColor,
-            width: 3,
+            width: 4,
             points: [g]
           };
           historyStack.push(currentStroke);
@@ -375,6 +425,7 @@
     mouseOnScreen = true;
     localMouseX = e.clientX;
     localMouseY = e.clientY;
+    updateCrosshair(e.clientX, e.clientY, !isFrozen && !isFadingOut);
     const g = toGlobal(e.clientX, e.clientY);
 
     updateCursor(e.clientX, e.clientY);
@@ -456,6 +507,7 @@
       if (croppedRect) {
         updateToolbarPosition();
       }
+      draw();
       return;
     }
 
@@ -486,6 +538,7 @@
       isFrozen = true;
       croppedRect = rect;
       magnifier.style.display = "none";
+      updateCrosshair(0, 0, false);
       window.api.sendCropperEvent({ type: "end", frozen: true, rect });
       showToolbar();
       draw();
@@ -496,6 +549,13 @@
   });
 
   window.addEventListener("keydown", (e) => {
+    if (ocrOverlay.style.display !== "none") {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        closeOCR();
+      }
+      return;
+    }
     if (e.key === "Escape") {
       window.api.cancelCrop();
     } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "c") {
@@ -690,6 +750,9 @@
   if (btnClipboard) {
     btnClipboard.addEventListener("click", () => executeCaptureAction("clipboard"));
   }
+  if (btnOCR) {
+    btnOCR.addEventListener("click", extractTextFromCrop);
+  }
   if (btnDesktop) {
     btnDesktop.addEventListener("click", () => executeCaptureAction("desktop"));
   }
@@ -700,12 +763,66 @@
     btnShare.addEventListener("click", () => executeCaptureAction("clipboard"));
   }
 
+  function closeOCR() {
+    ocrRequestId += 1;
+    ocrOverlay.style.display = "none";
+  }
+
+  async function extractTextFromCrop() {
+    if (!croppedRect || !compositeReady || ocrOverlay.style.display !== "none") return;
+    if (dropdownMenu) dropdownMenu.style.display = "none";
+    const dataUrl = getCroppedDataUrl();
+    if (!dataUrl) return;
+
+    const pt = cropperLanguage === "pt";
+    const requestId = ++ocrRequestId;
+    ocrTitle.textContent = pt ? "Texto extraído (OCR)" : "Extracted Text (OCR)";
+    ocrStatus.textContent = pt ? "Extraindo texto…" : "Extracting text…";
+    ocrText.value = "";
+    ocrCopy.textContent = pt ? "Copiar texto" : "Copy Text";
+    ocrCopy.disabled = true;
+    ocrOverlay.style.display = "flex";
+    ocrClose.focus();
+
+    try {
+      const result = await window.api.ocrExtract(dataUrl, cropperLanguage);
+      if (requestId !== ocrRequestId) return;
+      if (result.success && result.text?.trim()) {
+        ocrText.value = result.text;
+        ocrStatus.textContent = pt ? "Texto pronto para copiar." : "Text ready to copy.";
+        ocrCopy.disabled = false;
+      } else {
+        ocrStatus.textContent = pt ? "Nenhum texto encontrado." : "No text found.";
+        if (result.error && result.error !== "No text found in image") ocrStatus.textContent += ` ${result.error}`;
+      }
+    } catch (error) {
+      if (requestId === ocrRequestId) {
+        ocrStatus.textContent = pt ? "Falha ao extrair texto." : "Could not extract text.";
+      }
+    }
+  }
+
+  ocrClose.addEventListener("click", closeOCR);
+  ocrOverlay.addEventListener("click", (event) => {
+    if (event.target === ocrOverlay) closeOCR();
+  });
+  ocrCopy.addEventListener("click", async () => {
+    if (!ocrText.value) return;
+    try {
+      await navigator.clipboard.writeText(ocrText.value);
+      ocrStatus.textContent = cropperLanguage === "pt" ? "Texto copiado!" : "Text copied!";
+    } catch (_) {
+      ocrStatus.textContent = cropperLanguage === "pt" ? "Não foi possível copiar o texto." : "Could not copy text.";
+    }
+  });
+
   // Smooth Fade Out of Cropper Selection & Toolbar
   function executeCaptureAction(actionType) {
     const dataUrl = getCroppedDataUrl();
     if (!dataUrl || !croppedRect || isFadingOut) return;
 
     isFadingOut = true;
+    updateCrosshair(0, 0, false);
     if (dropdownMenu) dropdownMenu.style.display = "none";
     if (colorPopover) colorPopover.style.display = "none";
 
@@ -723,7 +840,7 @@
         requestAnimationFrame(fadeStep);
       } else {
         if (actionType === "editor") {
-          window.api.cropCompleted(dataUrl, croppedRect.w, croppedRect.h);
+          window.api.cropCompleted(dataUrl, croppedRect.w, croppedRect.h, "editor");
         } else if (actionType === "clipboard") {
           window.api.copyToClipboard(dataUrl);
           window.api.cancelCrop();
@@ -769,13 +886,30 @@
       targetCtx.lineWidth = item.width || 3;
       targetCtx.lineCap = "round";
       targetCtx.lineJoin = "round";
-      targetCtx.beginPath();
-      item.points.forEach((p, i) => {
-        const tp = transformPoint(p.x, p.y);
-        if (i === 0) targetCtx.moveTo(tp.x, tp.y);
-        else targetCtx.lineTo(tp.x, tp.y);
-      });
-      targetCtx.stroke();
+      const points = (item.points || []).map((p) => transformPoint(p.x, p.y));
+      if (points.length === 1) {
+        targetCtx.beginPath();
+        targetCtx.arc(points[0].x, points[0].y, targetCtx.lineWidth / 2, 0, Math.PI * 2);
+        targetCtx.fillStyle = item.color;
+        targetCtx.fill();
+      } else if (points.length > 1) {
+        // Quadratic midpoints smooth the sampled mouse positions into a
+        // continuous brush stroke instead of a chain of visible straight
+        // segments when the pointer events arrive unevenly.
+        targetCtx.beginPath();
+        targetCtx.moveTo(points[0].x, points[0].y);
+        for (let i = 1; i < points.length - 1; i += 1) {
+          const midpoint = {
+            x: (points[i].x + points[i + 1].x) / 2,
+            y: (points[i].y + points[i + 1].y) / 2
+          };
+          targetCtx.quadraticCurveTo(points[i].x, points[i].y, midpoint.x, midpoint.y);
+        }
+        const last = points[points.length - 1];
+        const previous = points[points.length - 2];
+        targetCtx.quadraticCurveTo(previous.x, previous.y, last.x, last.y);
+        targetCtx.stroke();
+      }
     } else if (item.tool === "pixelate") {
       const box = item;
       const bx = Math.floor(box.x);
@@ -903,9 +1037,12 @@
     const selection = (isDragging || isFrozen) ? getGlobalSelectionRect() : null;
     const frame = {
       rect: selection ? { x: selection.x - displayOffset.x, y: selection.y - displayOffset.y, w: selection.w, h: selection.h } : null,
-      cursor: mouseOnScreen && !isFrozen && !isFadingOut ? { x: localMouseX, y: localMouseY } : null,
+      cursor: mouseOnScreen && (!isFrozen || isDrawing) && !isFadingOut ? { x: localMouseX, y: localMouseY } : null,
+      brushBounds: isDrawing && currentStroke?.points.length
+        ? getStrokeBounds(currentStroke.points)
+        : null,
       opacity: cropperFadeOpacity,
-      annotated: historyStack.length > 0 || isBoxSelecting
+      annotated: (historyStack.length > 0 && !isDrawing) || isBoxSelecting
     };
     const damage = window.cropperDamage(previousFrame, frame, w, h);
     previousFrame = frame;
@@ -922,22 +1059,10 @@
     damage.forEach(r => ctx.clearRect(r.x, r.y, r.w, r.h));
     ctx.fillRect(0, 0, w, h);
 
-    // Magnifier when starting selection
+    // Keep the cursor marker local to the canvas. The full-screen crosshair
+    // is rendered by compositor layers so moving it does not repaint the
+    // entire ultrawide canvas.
     if (mouseOnScreen && !isFrozen && !isFadingOut) {
-      ctx.save();
-      ctx.strokeStyle = "#00e5ff";
-      ctx.lineWidth = 1;
-      ctx.setLineDash([2, 3]);
-      ctx.beginPath();
-      ctx.moveTo(0, localMouseY);
-      ctx.lineTo(w, localMouseY);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(localMouseX, 0);
-      ctx.lineTo(localMouseX, h);
-      ctx.stroke();
-      ctx.restore();
-
       ctx.save();
       ctx.beginPath();
       ctx.arc(localMouseX, localMouseY, 8, 0, 2 * Math.PI);

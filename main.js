@@ -19,6 +19,17 @@ const IS_MACOS = process.platform === 'darwin';
 const SUPPORTS_LOGIN_ITEMS = IS_WINDOWS || IS_MACOS;
 const DEFAULT_SHORTCUT = 'CommandOrControl+Shift+S';
 
+// Keep the native notification identity aligned with the product name. Without
+// this Electron can expose its internal identity (for example
+// `electron.app.Printcat`) in the notification header on Windows.
+app.setName('Printcat');
+if (IS_WINDOWS && typeof app.setAppUserModelId === 'function') {
+  // Packaged builds must keep the same ID as the installer shortcut. During
+  // development, using the product name prevents Electron's default
+  // `electron.app.*` identity from leaking into the notification header.
+  app.setAppUserModelId(app.isPackaged ? 'com.printcat.app' : 'Printcat');
+}
+
 // Default Settings
 const DEFAULT_SETTINGS = {
   shortcut: DEFAULT_SHORTCUT,
@@ -131,6 +142,7 @@ let cropperWindows = [];
 let editorWindow = null;
 let settingsWindow = null;
 let updateWindow = null;
+let updateNotificationWindow = null;
 let introWindow = null;
 let updateVersion = null;
 let tray = null;
@@ -179,7 +191,7 @@ function createTray() {
       { label: 'Settings', icon: iconSettings, click: () => openSettingsWindow() },
       { label: 'Check for Updates', icon: iconDownload, click: () => {
         if (app.isPackaged) {
-          autoUpdater.checkForUpdatesAndNotify().catch(err => {
+          autoUpdater.checkForUpdates().catch(err => {
             dialog.showErrorBox('Update Check Failed', err.message);
           });
         } else {
@@ -501,10 +513,11 @@ async function triggerScreenCapture() {
 }
 
 // Handle final cropped/full screenshot based on settings
-function handleScreenshotResult(dataUrl, width, height) {
-  if (settings.defaultAction === 'editor') {
+function handleScreenshotResult(dataUrl, width, height, requestedAction) {
+  const action = requestedAction || settings.defaultAction;
+  if (action === 'editor') {
     openEditorWindow(dataUrl, width, height);
-  } else if (settings.defaultAction === 'clipboard') {
+  } else if (action === 'clipboard') {
     const img = nativeImage.createFromDataURL(dataUrl);
     clipboard.writeImage(img);
     // Show a native notification (non-blocking)
@@ -517,7 +530,7 @@ function handleScreenshotResult(dataUrl, width, height) {
         icon: getAppIcon()
       }).show();
     }
-  } else if (settings.defaultAction === 'save') {
+  } else if (action === 'save') {
     const fileName = generateFileName();
     const savePath = path.join(settings.saveFolder, fileName);
     
@@ -808,6 +821,73 @@ function openUpdateWindow() {
   });
 }
 
+// Compact, app-owned update notification shown even when Settings is closed.
+// The detailed progress window opens only after the user chooses to download.
+function showUpdateNotification() {
+  if (updateNotificationWindow && !updateNotificationWindow.isDestroyed()) {
+    updateNotificationWindow.webContents.send('update-status', {
+      type: 'available',
+      version: updateVersion,
+      lang: getResolvedLanguage()
+    });
+    updateNotificationWindow.showInactive();
+    return;
+  }
+
+  const { width, height, x, y } = screen.getPrimaryDisplay().workArea;
+  const notificationWidth = 420;
+  const notificationHeight = 178;
+  const icon = nativeImage.createFromPath(getAppIcon());
+
+  updateNotificationWindow = new BrowserWindow({
+    width: notificationWidth,
+    height: notificationHeight,
+    x: x + width - notificationWidth - 22,
+    y: y + height - notificationHeight - 22,
+    frame: false,
+    transparent: true,
+    backgroundColor: '#00000000',
+    resizable: false,
+    movable: false,
+    focusable: true,
+    alwaysOnTop: true,
+    skipTaskbar: true,
+    icon,
+    show: false,
+    webPreferences: {
+      preload: path.join(__dirname, 'src', 'preload.js'),
+      contextIsolation: true,
+      nodeIntegration: false,
+      devTools: false
+    }
+  });
+
+  updateNotificationWindow.loadFile(path.join('src', 'pages', 'update-notification.html'));
+  updateNotificationWindow.webContents.on('did-finish-load', () => {
+    if (!updateNotificationWindow || updateNotificationWindow.isDestroyed()) return;
+    updateNotificationWindow.webContents.send('update-status', {
+      type: 'available',
+      version: updateVersion,
+      lang: getResolvedLanguage()
+    });
+  });
+  updateNotificationWindow.once('ready-to-show', () => {
+    if (!updateNotificationWindow || updateNotificationWindow.isDestroyed()) return;
+    updateNotificationWindow.setAlwaysOnTop(true, 'floating');
+    updateNotificationWindow.showInactive();
+  });
+  updateNotificationWindow.on('closed', () => {
+    updateNotificationWindow = null;
+  });
+}
+
+function closeUpdateNotification() {
+  if (updateNotificationWindow && !updateNotificationWindow.isDestroyed()) {
+    updateNotificationWindow.close();
+  }
+  updateNotificationWindow = null;
+}
+
 // Intro Window for Hyprland theme switch
 function openIntroWindow() {
   if (introWindow && !introWindow.isDestroyed()) {
@@ -871,7 +951,7 @@ function setupAutoUpdater() {
   autoUpdater.on('update-available', (info) => {
     console.log('Update available:', info.version);
     updateVersion = info.version;
-    openUpdateWindow(); // Abre a janela de atualização automaticamente!
+    showUpdateNotification();
     broadcastUpdateEvent('update-status', {
       type: 'available',
       version: info.version
@@ -891,6 +971,7 @@ function setupAutoUpdater() {
 
   autoUpdater.on('update-downloaded', (info) => {
     console.log('Update downloaded:', info.version);
+    closeUpdateNotification();
     broadcastUpdateEvent('update-status', {
       type: 'downloaded',
       version: info.version
@@ -899,6 +980,7 @@ function setupAutoUpdater() {
   
   autoUpdater.on('error', (err) => {
     console.error('Auto-updater error:', err);
+    closeUpdateNotification();
     broadcastUpdateEvent('update-status', {
       type: 'error',
       message: err.message
@@ -980,7 +1062,7 @@ ipcMain.on('window-control', (event, action) => {
   }
 });
 
-ipcMain.on('crop-completed', (event, croppedDataUrl, width, height) => {
+ipcMain.on('crop-completed', (event, croppedDataUrl, width, height, action = 'editor') => {
   closeAllCroppers();
   
   // Restore editor and/or settings if they were open before crop
@@ -994,7 +1076,7 @@ ipcMain.on('crop-completed', (event, croppedDataUrl, width, height) => {
   restoreEditorAfterCrop = false;
   restoreSettingsAfterCrop = false;
   
-  handleScreenshotResult(croppedDataUrl, width, height);
+  handleScreenshotResult(croppedDataUrl, width, height, action);
 });
 
 ipcMain.on('cancel-crop', () => {
@@ -1387,12 +1469,15 @@ ipcMain.on('print-image', (event, dataUrl) => {
 
 ipcMain.on('update-action', (event, action) => {
   if (action === 'restart') {
+    closeUpdateNotification();
     autoUpdater.quitAndInstall();
   } else if (action === 'later') {
+    closeUpdateNotification();
     if (updateWindow) {
       updateWindow.close();
     }
   } else if (action === 'download') {
+    closeUpdateNotification();
     openUpdateWindow();
   } else if (action === 'check') {
     if (app.isPackaged) {
@@ -1443,6 +1528,7 @@ ipcMain.handle('ocr-extract', async (event, imageDataUrl, lang) => {
         });
       });
       req.on('error', (e) => resolve({ text: '', success: false, error: e.message }));
+      req.setTimeout(20000, () => req.destroy(new Error('OCR request timed out')));
       req.write(postData);
       req.end();
     });

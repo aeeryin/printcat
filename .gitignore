@@ -29,3 +29,6 @@ npm-debug.log*
 
 # Electron builder cache
 .electron-builder-cache/
+
+# Private local administration dashboard
+/management-dashboard/

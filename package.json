@@ -1,6 +1,6 @@
 {
   "name": "printcat",
-  "version": "1.3.4",
+  "version": "1.3.5",
   "description": "Premium, feature-rich cross-platform screenshot tool",
   "main": "main.js",
   "scripts": {
@@ -137,7 +137,8 @@
       "!.git/**",
       "!website/**",
       "!*.log",
-      "!tests/**"
+      "!tests/**",
+      "!management-dashboard/**"
     ],
     "directories": {
       "output": "dist"

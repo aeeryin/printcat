@@ -1,8 +1,8 @@
-## Printcat 1.3.4
+## Printcat 1.3.5
 
-- Reduz o trabalho de renderização durante a seleção em monitores ultrawide, repintando apenas as regiões alteradas.
-- Agrupa atualizações do mouse e da lupa por quadro e evita atualizações pendentes após finalizar o recorte.
-- Mantém a interface tradicional das configurações com ícones SVG atualizados.
-- Corrige os links do site para baixar os arquivos da versão estável mais recente.
+- Adiciona OCR diretamente ao menu do cropper: extraia o texto da área selecionada, veja o resultado e copie sem abrir o editor.
+- Corrige o repintado do pincel durante o desenho e reduz travamentos na seleção em monitores ultrawide.
+- Faz a opção “Abrir no Editor” respeitar a escolha do menu, independentemente da ação padrão configurada.
+- Mostra uma notificação própria quando há uma atualização disponível e ajusta o nome exibido nas notificações.
 
-Os instaladores e os arquivos de atualização automática estão disponíveis nos anexos desta release.
+Os instaladores e os arquivos de atualização automática serão anexados a esta release pelo GitHub Actions.
