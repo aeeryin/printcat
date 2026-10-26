@@ -980,7 +980,7 @@ select {
 [data-theme="macos"] .window-controls {
   flex-direction: row;
   /* Close in order */
-  gap: 8px;
+  gap: 2px;
   align-items: center;
 }
 
@@ -1127,14 +1127,15 @@ select {
   flex-shrink: 0;
 }
 
-/* Powered by Fireflare Badge in Sidebar Bottom */
+/* Powered by HighGala Badge in Sidebar Bottom */
 .powered-by-badge {
   position: absolute;
   bottom: 16px;
   left: 16px;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
   font-size: 11px;
   font-weight: 500;
   color: var(--text-secondary);
@@ -1143,19 +1144,35 @@ select {
   padding: 0;
   pointer-events: none;
   z-index: 10;
-  opacity: 0.75;
+  opacity: 0.85;
 }
 
-.powered-by-badge .powered-by-icon {
-  width: 24px;
-  height: 24px;
+.powered-by-label {
+  line-height: 1;
+}
+
+.powered-by-logos {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 38px;
+}
+
+.powered-by-badge .powered-by-logo {
   object-fit: contain;
-  background: transparent;
 }
 
-.powered-by-badge strong {
-  color: var(--text-primary);
-  font-weight: 600;
+.powered-by-badge .powered-by-logo-bordered {
+  width: 40px;
+  height: 32px;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.powered-by-badge .powered-by-logo-white {
+  width: 104px;
+  height: 36px;
+  margin-left: -24px;
 }
 
 /* Open Storage Button Header */
